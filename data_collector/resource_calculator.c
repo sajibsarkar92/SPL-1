@@ -1,0 +1,1 @@
+// calculate the ram, uptime, cpu usage from the data. Application wise  and save it in resource.csv file
