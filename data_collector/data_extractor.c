@@ -92,6 +92,21 @@ int read_cpu_info(SystemCpuInfo *cpu_info) {
     return -1;
 }
 
+int read_system_uptime(SystemCpuInfo *cpu_info){
+    FILE *file = fopen("/proc/uptime", "r");
+    if (!file) {
+        return -1;
+    }
+
+    if (fscanf(file, "%Lf", &cpu_info->uptime) != 1) {
+        fclose(file);
+        return -1;
+    }
+
+    fclose(file);
+    return 0;
+}
+
 
 
 
@@ -185,9 +200,13 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
         // It's best to exit cleanly here.
         return -1;
     }
+    if(read_system_uptime(system_info) != 0){
+        return -1;
+    }
     
     // Use a dynamic array (realloc) to store the list
     ProcessInfo *temp_list = NULL;
+    size_t capacity = 0; // allocated slots
 
     // 1. Open /proc
     if ((dir = opendir("/proc")) == NULL) {
@@ -208,30 +227,42 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
         
         if (is_pid) {
             pid_t pid = (pid_t)atoi(entry->d_name);
-            
-            // Resize the list to hold one more ProcessInfo
-            temp_list = realloc(temp_list, (count + 1) * sizeof(ProcessInfo));
-            if (temp_list == NULL) {
-                // Handle realloc failure
-                // (Need proper cleanup, but for simplicity, we exit loop here)
-                break; 
+
+            /* Ensure capacity for one more element. Use doubling strategy to
+               avoid realloc-ing on every addition. If allocation fails, skip
+               this PID and continue — do NOT free the existing list. */
+            if ((size_t)(count + 1) > capacity) {
+                size_t new_capacity = capacity ? capacity * 2 : 8;
+                if ((size_t)(count + 1) > new_capacity) {
+                    new_capacity = (size_t)(count + 1);
+                }
+
+                /* Use temporary pointer to avoid losing temp_list on failure. */
+                ProcessInfo *tmp = realloc(temp_list, new_capacity * sizeof(ProcessInfo));
+                if (tmp == NULL) {
+                    // Allocation failed for this growth; skip this PID and continue.
+                    // Do not free temp_list — preserve previously collected data.
+                    continue;
+                }
+                temp_list = tmp;
+                capacity = new_capacity;
             }
-            
-            // Initialize the new entry
+
+            /* Initialize the new entry */
             ProcessInfo *current_info = &temp_list[count];
             current_info->pid = pid;
-            
-            // 3. Read the necessary files (Core Logic)
+
+            /* Read process files. If any reader fails, skip this PID and do not
+               change the allocated buffer (we'll keep the slot unused). */
             if (read_proc_stat(pid, current_info) == 0 &&
                 read_proc_status(pid, current_info) == 0 &&
-                read_proc_cmdline(pid, current_info) == 0
-            ) {
-                
+                read_proc_cmdline(pid, current_info) == 0) {
                 count++;
             } else {
-                // Clean up the failed allocation by reducing the list size
-                // Note: Reallocating to (count) will effectively chop off the last element.
-                temp_list = realloc(temp_list, count * sizeof(ProcessInfo));
+                /* Don't increment count — effectively drop this slot. We could
+                   optionally zero the slot, but leaving it overwritten on the
+                   next successful fill is fine. */
+                continue;
             }
         }
     }
@@ -258,9 +289,9 @@ void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info)
     }
 
     // Print System CPU Totals (as a header/context row)
-    fprintf(file, "SYSTEM_INFO,USER,NICE,SYSTEM,IDLE\n");
-    fprintf(file, "CPU_JIFFIES,%ld,%ld,%ld,%ld\n\n",
-        sys_info.user, sys_info.nice, sys_info.system, sys_info.idle);
+    fprintf(file, "SYSTEM_INFO,USER,NICE,SYSTEM,IDLE,UPTIME\n");
+    fprintf(file, "CPU_JIFFIES,%ld,%ld,%ld,%ld,%Lf\n\n",
+        sys_info.user, sys_info.nice, sys_info.system, sys_info.idle,sys_info.uptime);
 
     // Print Process Data Header
     fprintf(file, "PID,NAME,COMM,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB\n");

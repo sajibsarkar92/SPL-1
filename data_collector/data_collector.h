@@ -17,6 +17,7 @@ typedef struct {
     long nice;
     long system;
     long idle;
+    long double uptime;
 } SystemCpuInfo;
 
 
