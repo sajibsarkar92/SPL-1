@@ -109,12 +109,39 @@ int read_system_uptime(SystemCpuInfo *cpu_info){
     return 0;
 }
 
+// data_collector/data_extractor.c
+
+int read_total_system_memory(SystemCpuInfo *info) {
+    FILE *file = fopen("/proc/meminfo", "r");
+    if (!file) {
+        perror("Error opening /proc/meminfo");
+        return -1;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        // Look for the "MemTotal" line
+        if (strncmp(line, "MemTotal:", 9) == 0) {
+            unsigned long mem_kb;
+            // Scan for the value (it should be in KB)
+            if (sscanf(line + 9, "%lu", &mem_kb) == 1) {
+                info->total_mem_kb = mem_kb;
+                fclose(file);
+                return 0; // Success
+            }
+        }
+    }
+
+    fclose(file);
+    return -1; // Failure to find MemTotal
+}
+
 
 
 
 
 // 
-static int read_proc_status(pid_t pid, ProcessInfo *info){
+int read_proc_status(pid_t pid, ProcessInfo *info){
     char path[256];
     snprintf(path, sizeof(path), "/proc/%d/status", pid);
     
@@ -142,7 +169,7 @@ static int read_proc_status(pid_t pid, ProcessInfo *info){
 
 
 
-static int read_proc_pss(pid_t pid, ProcessInfo *info){
+int read_proc_pss(pid_t pid, ProcessInfo *info){
     char path[256];
     snprintf(path, sizeof(path), "/proc/%d/smaps", pid);     
     FILE *fp = fopen(path, "r");
@@ -225,6 +252,12 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     }
     if(read_system_uptime(system_info) != 0){
         // same here
+        return -1;
+    }
+
+    
+
+    if(read_total_system_memory(system_info) != 0) {
         return -1;
     }
     
@@ -347,6 +380,8 @@ void print_raw_data_to_csv(ProcessInfo *list, int count) {
 }
 
 
+
+
 // Updated function to include SystemCpuInfo
 int write_system_info(SystemCpuInfo sys_info){
     FILE *file = fopen("system_info.txt", "w");
@@ -362,9 +397,17 @@ int write_system_info(SystemCpuInfo sys_info){
     fprintf(file, "Idle Jiffies: %lu\n", sys_info.idle);
     fprintf(file, "Uptime (seconds): %Lf\n", sys_info.uptime);
     fprintf(file, "Ticks per second: %lu\n", HZ);
+    fprintf(file, "Total Memory (KB): %lu\n", sys_info.total_mem_kb);
 
     fclose(file);
 
     return 0;
     
+}
+
+/* Free a process list previously returned by extract_processes */
+void free_process_list(ProcessInfo *list) {
+    if (list != NULL) {
+        free(list);
+    }
 }
