@@ -1,175 +1,163 @@
 SYSTEM_INFO,USER,NICE,SYSTEM,IDLE,UPTIME
-CPU_JIFFIES,145082,137,48345,3473219,4817
+CPU_JIFFIES,73078,16,23934,1127132,1038.240000
 
 PID,NAME,COMM,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB
-1,"systemd","systemd",130,189,1866,1407,7,29660
-683,"systemd-journald","systemd-journal",28,54,0,0,394,32192
-717,"systemd-userdbd","systemd-userdbd",0,3,45,73,404,6300
-726,"systemd-udevd","systemd-udevd",243,216,427,425,430,17132
-989,"systemd-oomd","systemd-oomd",107,243,0,0,609,7236
-991,"systemd-resolved","systemd-resolve",57,31,0,0,609,15156
-1017,"auditd","auditd",1,2,0,0,616,2592
-1024,"dbus-broker-launch","dbus-broker-lau",5,3,0,0,623,4248
-1025,"dbus-broker","dbus-broker",76,71,0,0,631,5844
-1027,"avahi-daemon: running [fedora.local]","avahi-daemon",7,10,0,0,632,3700
-1028,"bluetoothd","bluetoothd",7,7,0,0,632,4716
-1032,"low-memory-monitor","low-memory-moni",3,4,0,0,634,5712
-1033,"mcelog","mcelog",0,0,0,0,635,2140
-1034,"polkitd","polkitd",73,61,56,70,635,8456
-1035,"rtkit-daemon","rtkit-daemon",5,7,0,0,635,2820
-1036,"smartd","smartd",2,2,0,0,636,5324
-1037,"accounts-daemon","accounts-daemon",9,6,0,0,636,7868
-1038,"switcheroo-control","switcheroo-cont",2,2,0,0,637,6876
-1039,"systemd-homed","systemd-homed",22,11,0,0,637,8116
-1040,"systemd-logind","systemd-logind",18,24,0,0,638,11016
-1041,"systemd-machined","systemd-machine",23,14,0,0,638,7440
-1042,"thermald","thermald",29,100,0,0,638,9644
-1043,"udisksd","udisksd",61,12,0,0,639,13208
-1045,"upowerd","upowerd",182,124,0,0,640,10928
-1049,"avahi-daemon: chroot helper","avahi-daemon",0,0,0,0,641,1412
-1076,"alsactl","alsactl",0,0,0,0,645,3388
-1088,"abrtd","abrtd",3,3,16,10,651,12924
-1112,"chronyd","chronyd",1,8,0,0,656,4164
-1137,"ModemManager","ModemManager",8,10,0,0,677,9388
-1138,"python3","firewalld",37,11,1,2,677,43976
-1151,"NetworkManager","NetworkManager",103,136,0,2,731,19256
-1159,"abrt-dump-journal-core","abrt-dump-journ",4,24,0,0,734,48628
-1162,"abrt-dump-journal-oops","abrt-dump-journ",4,25,0,0,734,53240
-1163,"abrt-dump-journal-xorg","abrt-dump-journ",3,23,0,0,734,50844
-1186,"wpa_supplicant","wpa_supplicant",15,90,0,0,765,9596
-1202,"cupsd","cupsd",1,2,0,0,772,9908
-1206,"python3","tuned",88,20,2,5,772,19452
-1212,"gssproxy","gssproxy",0,5,0,0,799,3908
-1234,"python3","tuned-ppd",105,49,0,0,808,15736
-1361,"gdm","gdm",5,5,30,18,1033,9028
-1396,"uresourced","uresourced",2,2,0,0,1057,6404
-1511,"colord","colord",7,4,0,0,1303,10488
-1753,"pcscd","pcscd",3,1,0,0,1424,7656
-1832,"geoclue","geoclue",111,32,0,0,1472,28596
-2112,"gdm-password]","gdm-session-wor",4,3,27,20,4168,11512
-2130,"systemd","systemd",60,37,9405,1546,5148,16248
-2132,"(sd-pam)","(sd-pam)",0,0,0,0,5154,2676
-2150,"gnome-keyring-daemon","gnome-keyring-d",15,4,0,0,5184,6912
-2169,"gdm-wayland-session","gdm-wayland-ses",1,0,0,0,5213,5592
-2175,"dbus-broker-launch","dbus-broker-lau",2,2,0,0,5215,3760
-2179,"dbus-broker","dbus-broker",25,24,0,0,5217,4572
-2184,"gnome-session-binary","gnome-session-b",2,2,3,4,5218,14012
-2239,"gnome-session-ctl","gnome-session-c",0,0,0,0,5248,5012
-2240,"uresourced","uresourced",5,4,0,0,5249,8296
-2243,"gnome-session-binary","gnome-session-b",12,9,23,11,5251,15584
-2246,"gvfsd","gvfsd",5,2,0,0,5252,8876
-2252,"gvfsd-fuse","gvfsd-fuse",1,0,0,0,5254,6700
-2266,"pipewire","pipewire",3,2,0,0,5256,7892
-2267,"wireplumber","wireplumber",34,14,0,0,5257,19424
-2304,"gnome-shell","gnome-shell",16699,7008,10154,2418,5266,182220
-2353,"xdg-permission-store","xdg-permission-",0,0,0,0,5311,5760
-2358,"at-spi-bus-launcher","at-spi-bus-laun",1,1,0,0,5315,7128
-2364,"dbus-broker-launch","dbus-broker-lau",0,0,0,0,5318,3852
-2365,"dbus-broker","dbus-broker",0,1,0,0,5319,2780
-2366,"at-spi2-registryd","at-spi2-registr",2,0,0,0,5326,6804
-2371,"gnome-shell-calendar-server","gnome-shell-cal",7,2,0,0,5358,20096
-2391,"dconf-service","dconf-service",4,2,0,0,5364,5696
-2392,"evolution-source-registry","evolution-sourc",11,7,0,0,5365,67604
-2406,"gjs","gjs",18,5,0,0,5374,24476
-2419,"ibus-daemon","ibus-daemon",767,186,0,0,5379,9724
-2420,"gsd-a11y-settings","gsd-a11y-settin",2,1,0,0,5379,6284
-2431,"gsd-color","gsd-color",13,4,0,0,5381,20368
-2433,"gsd-datetime","gsd-datetime",3,1,0,0,5381,10644
-2439,"gsd-housekeeping","gsd-housekeepin",22,8,0,0,5381,7856
-2442,"gsd-keyboard","gsd-keyboard",10,4,0,0,5382,20348
-2450,"gsd-media-keys","gsd-media-keys",64,16,0,0,5382,21636
-2454,"gsd-power","gsd-power",60,16,0,0,5383,22332
-2456,"gsd-print-notifications","gsd-print-notif",2,2,0,0,5383,10528
-2468,"gsd-rfkill","gsd-rfkill",3,2,0,0,5384,6200
-2474,"evolution-alarm-notify","evolution-alarm",29,8,0,0,5385,81452
-2475,"gsd-screensaver-proxy","gsd-screensaver",1,1,0,0,5387,5860
-2481,"gnome-software","gnome-software",899,92,27,11,5387,304752
-2491,"gsd-sharing","gsd-sharing",38,9,0,0,5388,10356
-2512,"gsd-smartcard","gsd-smartcard",1,2,0,0,5390,10992
-2517,"gsd-sound","gsd-sound",1,2,0,0,5390,8152
-2522,"gsd-usb-protection","gsd-usb-protect",2,1,0,0,5391,7008
-2523,"gsd-disk-utility-notify","gsd-disk-utilit",1,1,0,0,5391,7384
-2530,"gsd-wacom","gsd-wacom",13,3,0,0,5392,20304
-2571,"ibus-dconf","ibus-dconf",0,0,0,0,5396,6508
-2577,"ibus-extension-gtk3","ibus-extension-",340,40,0,0,5397,23760
-2625,"abrt-applet","abrt-applet",4,2,0,0,5404,17544
-2628,"gjs","gjs",8,1,0,0,5404,23716
-2631,"gvfs-udisks2-volume-monitor","gvfs-udisks2-vo",10,5,0,0,5404,12112
-2633,"ibus-portal","ibus-portal",2,1,0,0,5405,6764
-2687,"gvfs-mtp-volume-monitor","gvfs-mtp-volume",1,0,0,0,5413,6352
-2702,"gvfs-gphoto2-volume-monitor","gvfs-gphoto2-vo",1,0,0,0,5416,6912
-2713,"gvfs-goa-volume-monitor","gvfs-goa-volume",1,0,0,0,5419,5876
-2726,"goa-daemon","goa-daemon",4,1,0,0,5422,19080
-2727,"abrt-dbus","abrt-dbus",6,2,0,0,5424,13060
-2742,"goa-identity-service","goa-identity-se",7,25,0,0,5429,10644
-2744,"gvfs-afc-volume-monitor","gvfs-afc-volume",3,7,0,0,5430,7836
-2790,"ibus-engine-simple","ibus-engine-sim",209,52,0,0,5458,6704
-2860,"evolution-calendar-factory","evolution-calen",10,6,0,0,5490,25096
-2862,"gsd-printer","gsd-printer",1,0,0,0,5498,15568
-2871,"pipewire-pulse","pipewire-pulse",2,1,0,0,5500,7812
-2911,"evolution-addressbook-factory","evolution-addre",6,4,0,0,5570,27152
-2915,"xdg-desktop-portal","xdg-desktop-por",14,8,0,0,5572,12228
-2928,"xdg-document-portal","xdg-document-po",2,2,0,0,5576,6308
-2940,"fusermount3","fusermount3",0,0,0,0,5579,1956
-2961,"xdg-desktop-portal-gnome","xdg-desktop-por",37,9,0,0,5582,52396
-2992,"xdg-desktop-portal-gtk","xdg-desktop-por",12,3,0,0,5615,21144
-3067,"gvfsd-metadata","gvfsd-metadata",1,1,0,0,5684,6068
-3071,"passimd","passimd",7,7,0,0,5699,11924
-3091,"bash","brave-browser-s",0,0,0,0,5898,3580
-3097,"cat","cat",0,0,0,0,5900,1760
-3098,"cat","cat",0,0,0,0,5900,1760
-3099,"brave","brave",5838,1743,30,51,5900,323060
-3101,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,6016,3756
-3103,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,6018,3364
-3109,"brave --type=zygote --no-zygote-sandbox --string-annotations --","brave",4,3,0,0,6019,56124
-3110,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",4,2,0,0,6019,59488
-3112,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",0,7,307,102,6034,8116
-3123,"Xwayland","Xwayland",2863,2431,0,0,6042,73876
-3131,"gsd-xsettings","gsd-xsettings",25,5,0,1,6056,50288
-3147,"ibus-x11","ibus-x11",9,1,0,0,6077,26724
-3166,"mutter-x11-frames","mutter-x11-fram",509,185,0,0,6085,55892
-3198,"brave --type=gpu-process --string-annotations --crashpad-handle","brave",6557,2461,0,0,6102,132420
-3199,"brave --type=utility --utility-sub-type=network.mojom.NetworkSe","brave",896,552,0,0,6102,115240
-3212,"brave --type=utility --utility-sub-type=storage.mojom.StorageSe","brave",25,15,0,0,6138,44496
-3276,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",27137,1490,0,0,6325,393176
-3351,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",63,22,0,0,6487,112960
-3372,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",195,29,0,0,6660,146504
-3418,"brave --type=utility --utility-sub-type=audio.mojom.AudioServic","brave",18,7,0,0,6915,91104
-3454,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",639,72,0,0,7328,190904
-3459,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",1257,149,0,0,7328,208616
-3484,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",16258,885,0,0,7343,316560
-3543,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",1400,284,0,0,7419,199740
-3639,"python3","python3",75,7,0,0,8494,80144
-3652,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",83,15,0,0,9038,138608
-3746,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",5,3,0,0,16516,60828
-4514,"nautilus","nautilus",704,110,0,0,21416,123304
-4518,"gvfsd-trash","gvfsd-trash",4,3,0,0,21430,9312
-4534,"tracker-miner-fs-3","tracker-miner-f",75,25,38,18,21492,26612
-4577,"gvfsd-recent","gvfsd-recent",3,1,0,0,21544,9364
-4578,"gvfsd-network","gvfsd-network",6,1,0,0,21544,9732
-4589,"gvfsd-dnssd","gvfsd-dnssd",2,1,0,0,21547,9588
-4595,"gvfsd-wsdd","gvfsd-wsdd",7,5,0,0,21550,9112
-4600,"python3","wsdd",24,8,0,0,21553,28548
-5744,"code","code",2636,774,2001,356,57502,241828
-5749,"code","code",5,3,0,0,57513,79224
-5750,"code","code",5,2,0,0,57514,79644
-5752,"code","code",0,1,945,138,57522,16924
-5767,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,57568,2624
-5786,"code","code",4090,1249,0,0,57586,114952
-5795,"exe","code",118,83,0,0,57588,101944
-5879,"exe","code",979,231,77,18,57766,179108
-5944,"exe","code",678,405,35,88,57845,142984
-6088,"code","code",16050,1392,0,0,58093,419520
-6238,"exe","code",162,73,0,0,59938,137588
-6251,"exe","code",4306,746,27,239,59952,710216
-6376,"bash","bash",5,4,25,21,61891,6088
-6738,"oosplash","oosplash",1,11,14,8,94024,6120
-6771,"soffice.bin","soffice.bin",4846,152,0,0,94102,302388
-7066,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",95,22,0,0,399294,143400
-7113,"sssd_kcm","sssd_kcm",8,7,0,0,399380,7444
-7290,"cpptools","cpptools",1478,436,8,8,404044,47816
-7358,"cpptools-srv","cpptools-srv",359,214,0,0,449098,25776
-7473,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,461111,6164
-7474,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,461111,6276
-7475,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,461111,6112
-7663,"raw_monitor","raw_monitor",0,1,0,0,481771,1568
+1,"systemd","systemd",118,167,1321,744,7,28916
+678,"systemd-journald","systemd-journal",23,38,0,0,386,37112
+714,"systemd-userdbd","systemd-userdbd",1,2,32,55,398,6316
+723,"systemd-udevd","systemd-udevd",13,14,229,217,427,12740
+950,"systemd-oomd","systemd-oomd",37,94,0,0,511,7236
+951,"systemd-resolved","systemd-resolve",38,27,0,0,511,16040
+972,"auditd","auditd",0,1,0,0,519,2576
+978,"dbus-broker-launch","dbus-broker-lau",5,2,0,0,524,3956
+988,"dbus-broker","dbus-broker",41,34,0,0,529,7072
+990,"avahi-daemon: running [fedora.local]","avahi-daemon",9,8,0,0,530,3884
+991,"bluetoothd","bluetoothd",4,4,0,0,530,4852
+997,"low-memory-monitor","low-memory-moni",2,2,0,0,533,5528
+998,"mcelog","mcelog",0,1,0,0,533,1752
+1003,"polkitd","polkitd",62,61,50,66,534,10504
+1006,"rtkit-daemon","rtkit-daemon",2,4,0,0,535,2912
+1008,"smartd","smartd",1,0,0,0,535,6036
+1009,"accounts-daemon","accounts-daemon",6,4,0,0,537,8008
+1010,"switcheroo-control","switcheroo-cont",0,1,0,0,537,6880
+1011,"systemd-homed","systemd-homed",18,9,0,0,537,8116
+1012,"systemd-logind","systemd-logind",12,20,0,0,538,10840
+1013,"systemd-machined","systemd-machine",18,11,0,0,538,7428
+1014,"thermald","thermald",13,35,0,0,538,9336
+1015,"udisksd","udisksd",20,9,0,0,538,14784
+1023,"upowerd","upowerd",11,13,0,0,539,9860
+1047,"avahi-daemon: chroot helper","avahi-daemon",0,0,0,0,540,1408
+1050,"alsactl","alsactl",0,0,0,0,541,3000
+1059,"abrtd","abrtd",3,3,18,14,543,13392
+1085,"chronyd","chronyd",1,4,0,0,546,4320
+1116,"ModemManager","ModemManager",3,4,0,0,558,11992
+1117,"python3","firewalld",33,9,0,2,558,45024
+1140,"abrt-dump-journal-core","abrt-dump-journ",3,27,0,0,611,50576
+1141,"abrt-dump-journal-oops","abrt-dump-journ",4,26,0,0,611,54176
+1142,"abrt-dump-journal-xorg","abrt-dump-journ",4,24,0,0,612,53124
+1144,"NetworkManager","NetworkManager",53,59,1,5,724,19720
+1175,"wpa_supplicant","wpa_supplicant",7,31,0,0,758,10464
+1193,"cupsd","cupsd",1,2,0,0,765,10264
+1197,"python3","tuned",43,10,2,6,765,31388
+1199,"gssproxy","gssproxy",0,2,0,0,771,3872
+1251,"python3","tuned-ppd",46,19,0,0,803,28112
+1333,"gdm","gdm",3,4,10,8,949,8684
+1375,"uresourced","uresourced",2,2,0,0,965,6156
+1497,"colord","colord",8,5,0,0,1229,11568
+1714,"pcscd","pcscd",3,2,0,0,1343,7284
+1805,"geoclue","geoclue",52,14,0,0,1386,34884
+2090,"gdm-password]","gdm-session-wor",2,2,7,4,4158,11528
+2099,"systemd","systemd",49,26,476,315,4388,16036
+2101,"(sd-pam)","(sd-pam)",0,0,0,0,4394,3008
+2119,"gnome-keyring-daemon","gnome-keyring-d",7,2,0,0,4424,7520
+2145,"gdm-wayland-session","gdm-wayland-ses",0,0,0,0,4455,5876
+2150,"dbus-broker-launch","dbus-broker-lau",1,2,0,0,4456,3944
+2156,"dbus-broker","dbus-broker",12,14,0,0,4459,4216
+2159,"gnome-session-binary","gnome-session-b",2,1,2,4,4460,14172
+2214,"gnome-session-ctl","gnome-session-c",0,0,0,0,4489,5136
+2215,"uresourced","uresourced",1,3,0,0,4489,8876
+2218,"gnome-session-binary","gnome-session-b",10,7,15,11,4492,15716
+2221,"gvfsd","gvfsd",3,0,0,0,4493,8672
+2231,"gvfsd-fuse","gvfsd-fuse",0,0,0,0,4495,6752
+2242,"pipewire","pipewire",4,2,0,0,4497,12404
+2243,"wireplumber","wireplumber",15,7,0,0,4497,26152
+2281,"gnome-shell","gnome-shell",7911,3813,0,0,4508,235312
+2331,"xdg-permission-store","xdg-permission-",0,0,0,0,4554,5936
+2337,"at-spi-bus-launcher","at-spi-bus-laun",1,1,0,0,4558,6872
+2343,"dbus-broker-launch","dbus-broker-lau",0,0,0,0,4562,3824
+2344,"dbus-broker","dbus-broker",0,0,0,0,4563,2860
+2345,"at-spi2-registryd","at-spi2-registr",1,1,0,0,4571,6424
+2350,"gnome-shell-calendar-server","gnome-shell-cal",6,1,0,0,4603,20792
+2364,"dconf-service","dconf-service",0,0,0,0,4607,5420
+2378,"evolution-source-registry","evolution-sourc",23,9,0,0,4610,67976
+2382,"gjs","gjs",16,4,0,0,4613,29716
+2402,"ibus-daemon","ibus-daemon",370,86,0,0,4617,12612
+2404,"gsd-a11y-settings","gsd-a11y-settin",2,1,0,0,4618,6292
+2410,"gsd-color","gsd-color",11,4,0,0,4619,23240
+2420,"gsd-datetime","gsd-datetime",2,2,0,0,4619,10640
+2421,"gsd-housekeeping","gsd-housekeepin",12,5,0,0,4620,7696
+2428,"gsd-keyboard","gsd-keyboard",8,5,0,0,4621,22408
+2429,"gsd-media-keys","gsd-media-keys",11,4,0,0,4621,25684
+2432,"gsd-power","gsd-power",12,4,0,0,4622,24244
+2445,"gsd-print-notifications","gsd-print-notif",2,1,0,0,4624,12044
+2450,"gsd-rfkill","gsd-rfkill",1,1,0,0,4625,6472
+2452,"evolution-alarm-notify","evolution-alarm",34,7,0,0,4625,85340
+2454,"gsd-screensaver-proxy","gsd-screensaver",1,1,0,0,4625,5924
+2459,"gsd-sharing","gsd-sharing",15,4,0,0,4627,11016
+2465,"gsd-smartcard","gsd-smartcard",1,1,0,0,4627,11744
+2470,"gsd-sound","gsd-sound",1,1,0,0,4628,8872
+2479,"gsd-usb-protection","gsd-usb-protect",1,1,0,0,4629,7152
+2481,"gsd-wacom","gsd-wacom",11,4,0,0,4629,23364
+2501,"gnome-software","gnome-software",1115,79,41,17,4630,398740
+2519,"gsd-disk-utility-notify","gsd-disk-utilit",1,0,0,0,4632,7372
+2559,"ibus-dconf","ibus-dconf",0,0,0,0,4635,6804
+2562,"ibus-extension-gtk3","ibus-extension-",320,18,0,0,4635,33608
+2594,"abrt-applet","abrt-applet",8,2,0,0,4639,18636
+2600,"gjs","gjs",7,1,0,0,4640,30160
+2605,"ibus-portal","ibus-portal",2,0,0,0,4640,7024
+2613,"gvfs-udisks2-volume-monitor","gvfs-udisks2-vo",10,3,0,0,4641,13276
+2650,"gvfs-mtp-volume-monitor","gvfs-mtp-volume",0,1,0,0,4650,6436
+2661,"gvfs-gphoto2-volume-monitor","gvfs-gphoto2-vo",1,1,0,0,4654,6720
+2699,"gvfs-goa-volume-monitor","gvfs-goa-volume",0,0,0,0,4669,5788
+2707,"goa-daemon","goa-daemon",5,2,0,0,4672,22380
+2708,"abrt-dbus","abrt-dbus",5,2,0,0,4674,13724
+2720,"goa-identity-service","goa-identity-se",5,8,0,0,4681,10316
+2722,"gvfs-afc-volume-monitor","gvfs-afc-volume",1,3,0,0,4683,7728
+2757,"sssd_kcm","sssd_kcm",9,8,0,0,4702,7664
+2766,"ibus-engine-simple","ibus-engine-sim",101,30,0,0,4708,7044
+2786,"pipewire-pulse","pipewire-pulse",1,1,0,0,4714,9312
+2860,"gsd-printer","gsd-printer",3,1,0,0,4739,16388
+2871,"evolution-calendar-factory","evolution-calen",7,3,0,0,4744,26600
+2878,"xdg-desktop-portal","xdg-desktop-por",8,4,0,0,4746,14288
+2894,"xdg-document-portal","xdg-document-po",1,1,0,0,4750,6596
+2903,"fusermount3","fusermount3",0,0,0,0,4752,1784
+2920,"evolution-addressbook-factory","evolution-addre",4,2,0,0,4763,30004
+2927,"xdg-desktop-portal-gnome","xdg-desktop-por",19,4,0,0,4766,66764
+2973,"xdg-desktop-portal-gtk","xdg-desktop-por",17,4,0,0,4818,26868
+3025,"fwupd","fwupd",25,11,0,0,4862,39028
+3049,"gvfsd-metadata","gvfsd-metadata",0,0,0,0,4889,6364
+3053,"passimd","passimd",4,4,0,0,4928,11960
+3165,"bash","brave-browser-s",0,0,0,0,7683,3524
+3172,"cat","cat",0,0,0,0,7685,1848
+3173,"cat","cat",0,0,0,0,7685,1720
+3174,"brave","brave",1936,568,19,14,7685,388556
+3175,"python3","python3",95,10,0,0,7694,83640
+3185,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,7804,3692
+3187,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,7805,3556
+3193,"brave --type=zygote --no-zygote-sandbox --string-annotations --","brave",3,2,0,0,7808,101032
+3194,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",2,2,0,0,7808,101452
+3196,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",0,5,630,104,7820,23064
+3207,"Xwayland","Xwayland",2135,1761,2,0,7828,78432
+3216,"gsd-xsettings","gsd-xsettings",27,4,0,2,7841,61696
+3235,"ibus-x11","ibus-x11",13,2,0,0,7861,27332
+3257,"mutter-x11-frames","mutter-x11-fram",145,55,0,0,7867,73560
+3286,"brave --type=gpu-process --string-annotations --crashpad-handle","brave",794,271,0,0,7888,150628
+3287,"brave --type=utility --utility-sub-type=network.mojom.NetworkSe","brave",455,277,0,0,7889,154280
+3315,"brave --type=utility --utility-sub-type=storage.mojom.StorageSe","brave",11,5,0,0,7944,60724
+3337,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",112,24,0,0,7963,158312
+3351,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",1080,96,0,0,7995,263924
+3425,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",31,8,0,0,8133,127312
+3444,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",2267,309,0,0,8634,322740
+3453,"brave --type=utility --utility-sub-type=audio.mojom.AudioServic","brave",13,6,0,0,8658,116632
+3475,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",93,14,0,0,8905,148916
+3477,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",113,21,0,0,8905,166628
+3609,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4,2,0,0,10122,76328
+3677,"code","code",2008,580,21,11,19551,237920
+3682,"code","code",5,3,0,0,19609,79476
+3683,"code","code",5,3,0,0,19609,79880
+3685,"code","code",0,0,0,0,19625,17032
+3700,"chrome_crashpad_handler","chrome_crashpad",0,0,0,0,19664,3340
+3722,"code","code",8624,2395,0,0,19681,117800
+3731,"exe","code",235,164,0,0,19683,104232
+3771,"code","code",28101,2169,0,0,19718,429392
+3815,"exe","code",7136,1144,37,301,19877,798388
+3819,"exe","code",1977,755,237,45,19884,146920
+3820,"exe","code",138,45,0,0,19885,137520
+3998,"cpptools","cpptools",2172,570,10,12,20803,54640
+4583,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,98512,6376
+4584,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,98512,6284
+4585,"systemd-userwork: waiting...","systemd-userwor",0,0,0,0,98513,6260
+4623,"exe","code",110,23,4,13,101204,140244
+4641,"bash","bash",5,2,21,14,101281,6024
+4684,"cpptools-srv","cpptools-srv",2,2,0,0,101403,20212
+4716,"spl_collect","spl_collect",0,1,0,0,103824,1612

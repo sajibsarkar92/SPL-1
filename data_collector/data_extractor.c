@@ -193,22 +193,22 @@ static int read_proc_cmdline(pid_t pid, ProcessInfo *info) {
 int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     DIR *dir;
     struct dirent *entry;
-    int count = 0;
+    size_t count = 0;
 
     if (read_cpu_info(system_info) != 0) {
-        // If system CPU totals cannot be read, the program cannot calculate CPU%.
-        // It's best to exit cleanly here.
+        // upon failure, exit here
         return -1;
     }
     if(read_system_uptime(system_info) != 0){
+        // same here
         return -1;
     }
     
-    // Use a dynamic array (realloc) to store the list
+    // realloc to allocate, and use temporary pointer to avoid leaks on failure
     ProcessInfo *temp_list = NULL;
-    size_t capacity = 0; // allocated slots
+    size_t capacity = 0; // current allocated capacity
 
-    // 1. Open /proc
+    // 1. Opening /proc
     if ((dir = opendir("/proc")) == NULL) {
         perror("Error opening /proc");
         return -1;
@@ -216,7 +216,7 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
 
     // 2. Iterate through all entries in /proc
     while ((entry = readdir(dir)) != NULL) {
-        // Check if the directory name is purely numeric (a PID)
+        // check if the folder is numeric
         int is_pid = 1;
         for (char *c = entry->d_name; *c; c++) {
             if (!isdigit(*c)) {
@@ -228,40 +228,43 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
         if (is_pid) {
             pid_t pid = (pid_t)atoi(entry->d_name);
 
-            /* Ensure capacity for one more element. Use doubling strategy to
-               avoid realloc-ing on every addition. If allocation fails, skip
-               this PID and continue — do NOT free the existing list. */
-            if ((size_t)(count + 1) > capacity) {
-                size_t new_capacity = capacity ? capacity * 2 : 8;
-                if ((size_t)(count + 1) > new_capacity) {
+            // making sure we have enough space
+            if ((count + 1) > capacity) {
+                size_t new_capacity;
+                if (capacity == 0) {
+                    new_capacity = 64; // initial capacity
+                } else {
+                    new_capacity = capacity * 2; // double the capacity, like vector
+                }
+
+
+                if ((count + 1) > new_capacity) {
                     new_capacity = (size_t)(count + 1);
                 }
 
                 /* Use temporary pointer to avoid losing temp_list on failure. */
                 ProcessInfo *tmp = realloc(temp_list, new_capacity * sizeof(ProcessInfo));
                 if (tmp == NULL) {
-                    // Allocation failed for this growth; skip this PID and continue.
-                    // Do not free temp_list — preserve previously collected data.
+                    // upon failure, skip this PID but keep existing data
                     continue;
                 }
+                // Success, update pointer and capacity
                 temp_list = tmp;
+                //update capacity
                 capacity = new_capacity;
             }
 
-            /* Initialize the new entry */
+            // Fill in the ProcessInfo structure
             ProcessInfo *current_info = &temp_list[count];
             current_info->pid = pid;
 
-            /* Read process files. If any reader fails, skip this PID and do not
-               change the allocated buffer (we'll keep the slot unused). */
+            // helper functins to read data from various /proc files
             if (read_proc_stat(pid, current_info) == 0 &&
                 read_proc_status(pid, current_info) == 0 &&
                 read_proc_cmdline(pid, current_info) == 0) {
                 count++;
             } else {
-                /* Don't increment count — effectively drop this slot. We could
-                   optionally zero the slot, but leaving it overwritten on the
-                   next successful fill is fine. */
+                // on failure, skip this process but keep existing data
                 continue;
             }
         }
@@ -281,6 +284,8 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     temporary function to print raw data to csv file for testing
 
 */
+
+
 void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info) {
     FILE *file = fopen(CSV_FILENAME, "w");
     if (file == NULL) {
@@ -311,5 +316,5 @@ void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info)
     }
 
     fclose(file);
-    printf("✅ Raw data written to %s successfully.\n", CSV_FILENAME);
+    printf(" Raw data written to %s successfully.\n", CSV_FILENAME);
 }
