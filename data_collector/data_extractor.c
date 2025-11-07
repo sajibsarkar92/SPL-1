@@ -26,7 +26,7 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
         "%*d "          // pid
         "%63s "         // comm
         "%*c "          // state
-        "%*d "          // ppid
+        "%d "          // ppid
         "%*d "          // pgrp
         "%*d "          // session
         "%*d "          // tty_nr
@@ -46,6 +46,7 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
         "%*ld "         // itrealvalue
         "%ld",          // starttime
         temp_name,
+        &info->ppid,
         &info->utime,
         &info->stime,
         &info->cutime,
@@ -58,9 +59,10 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
         temp_name[len - 1] = '\0';  // Remove trailing ')'
         memmove(temp_name, temp_name + 1, len - 1);  // Remove leading '('
     }
+
     strncpy(info->comm, temp_name, sizeof(info->comm) - 1);
     info->comm[sizeof(info->comm) - 1] = '\0';
-    if (read != 6) {
+    if (read != 7) {
     fclose(file);
     return -1;
     }
@@ -78,7 +80,7 @@ int read_cpu_info(SystemCpuInfo *cpu_info) {
     char line[256];
     if (fgets(line, sizeof(line), file)) {
         // Parse the first line starting with "cpu"
-        if (sscanf(line, "cpu %ld %ld %ld %ld",
+        if (sscanf(line, "cpu %lu %lu %lu %lu",
                    &cpu_info->user,
                    &cpu_info->nice,
                    &cpu_info->system,
@@ -111,7 +113,7 @@ int read_system_uptime(SystemCpuInfo *cpu_info){
 
 
 
-// Helper function to read /proc/[pid]/status for VmRSS
+// 
 static int read_proc_status(pid_t pid, ProcessInfo *info){
     char path[256];
     snprintf(path, sizeof(path), "/proc/%d/status", pid);
@@ -138,9 +140,36 @@ static int read_proc_status(pid_t pid, ProcessInfo *info){
     return -1; 
 }
 
+
+
+static int read_proc_pss(pid_t pid, ProcessInfo *info){
+    char path[256];
+    snprintf(path, sizeof(path), "/proc/%d/smaps", pid);     
+    FILE *fp = fopen(path, "r");
+    
+    if(!fp) {
+        info->pss_kb = 0; 
+        return -1;
+    }
+
+    char line[256];
+    info->pss_kb = 0; 
+    while(fgets(line, sizeof(line), fp)){
+            if(strncmp(line, "Pss:", 4) == 0){ 
+            long pss;
+                        if(sscanf(line + 4, "%ld", &pss) == 1){ 
+                info->pss_kb += pss;
+            }
+        }
+    }
+    
+    fclose(fp);
+    return 0; 
+}
+
 // Helper function to read /proc/[pid]/cmdline for name
 
-static int read_proc_cmdline(pid_t pid, ProcessInfo *info) {
+ int read_proc_cmdline(pid_t pid, ProcessInfo *info) {
     char path[256];
     snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
     
@@ -164,9 +193,8 @@ static int read_proc_cmdline(pid_t pid, ProcessInfo *info) {
         return 0;
     }
     
-    // --- STEP B: Extract Basename from argv[0] ---
-    // argv[0] is everything up to the first null character, which is exactly
-    // what we read into cmdline_buffer because fread stops at the end of the file.
+       
+    
     char *command_path = cmdline_buffer; 
 
     // Find the basename: the part after the last '/'
@@ -184,11 +212,7 @@ static int read_proc_cmdline(pid_t pid, ProcessInfo *info) {
     return 0;
 }
 
-/**
- * @brief Main function to extract all process data from /proc.
- * @param list Pointer to a ProcessInfo* list pointer (output).
- * @return The number of processes successfully extracted, or -1 on error.
- */
+
 
 int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     DIR *dir;
@@ -261,7 +285,9 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
             // helper functins to read data from various /proc files
             if (read_proc_stat(pid, current_info) == 0 &&
                 read_proc_status(pid, current_info) == 0 &&
-                read_proc_cmdline(pid, current_info) == 0) {
+                read_proc_pss(pid, current_info) == 0 &&
+                read_proc_cmdline(pid, current_info) == 0)  
+            {
                 count++;
             } else {
                 // on failure, skip this process but keep existing data
@@ -286,7 +312,7 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
 */
 
 
-void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info) {
+void print_raw_data_to_csv(ProcessInfo *list, int count) {
     FILE *file = fopen(CSV_FILENAME, "w");
     if (file == NULL) {
         perror("Error opening raw_data.csv for writing");
@@ -294,19 +320,20 @@ void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info)
     }
 
     // Print System CPU Totals (as a header/context row)
-    fprintf(file, "SYSTEM_INFO,USER,NICE,SYSTEM,IDLE,UPTIME\n");
-    fprintf(file, "CPU_JIFFIES,%ld,%ld,%ld,%ld,%Lf\n\n",
-        sys_info.user, sys_info.nice, sys_info.system, sys_info.idle,sys_info.uptime);
+    // fprintf(file, "SYSTEM_INFO,USER,NICE,SYSTEM,IDLE,UPTIME,\n");
+    // fprintf(file, "CPU_JIFFIES,%ld,%ld,%ld,%ld,%Lf\n\n",
+    //     sys_info.user, sys_info.nice, sys_info.system, sys_info.idle,sys_info.uptime);
 
     // Print Process Data Header
-    fprintf(file, "PID,NAME,COMM,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB\n");
+    fprintf(file, "PID,NAME,COMM,PPID,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB\n");
 
     // Print Process Rows
     for (int i = 0; i < count; i++) {
-        fprintf(file, "%d,\"%s\",\"%s\",%ld,%ld,%ld,%ld,%ld,%ld\n",
+        fprintf(file, "%d,\"%s\",\"%s\",%d,%ld,%ld,%ld,%ld,%ld,%ld\n",
             list[i].pid,
             list[i].name,
             list[i].comm,
+            list[i].ppid,
             list[i].utime,
             list[i].stime,
             list[i].cutime,
@@ -317,4 +344,27 @@ void print_raw_data_to_csv(ProcessInfo *list, int count, SystemCpuInfo sys_info)
 
     fclose(file);
     printf(" Raw data written to %s successfully.\n", CSV_FILENAME);
+}
+
+
+// Updated function to include SystemCpuInfo
+int write_system_info(SystemCpuInfo sys_info){
+    FILE *file = fopen("system_info.txt", "w");
+
+    if(!file) return -1;
+
+    unsigned long HZ = sysconf(_SC_CLK_TCK);
+
+    fprintf(file, "System CPU Information:\n");
+    fprintf(file, "User Jiffies: %lu\n", sys_info.user);
+    fprintf(file, "Nice Jiffies: %lu\n", sys_info.nice);
+    fprintf(file, "System Jiffies: %lu\n", sys_info.system);
+    fprintf(file, "Idle Jiffies: %lu\n", sys_info.idle);
+    fprintf(file, "Uptime (seconds): %Lf\n", sys_info.uptime);
+    fprintf(file, "Ticks per second: %lu\n", HZ);
+
+    fclose(file);
+
+    return 0;
+    
 }

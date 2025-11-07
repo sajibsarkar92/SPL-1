@@ -16,7 +16,8 @@ int raw_data_to_csv(void) {
 
 	if (count > 0) {
 		printf("✅ Successfully extracted %d processes.\n", count);
-		print_raw_data_to_csv(proc_list, count, sys_totals);
+		print_raw_data_to_csv(proc_list, count);
+		write_system_info(sys_totals);
 
 		free(proc_list);
 		return 0;
@@ -30,3 +31,4 @@ int raw_data_to_csv(void) {
 		return 1;
 	}
 }
+

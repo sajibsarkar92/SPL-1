@@ -1,0 +1,7 @@
+System CPU Information:
+User Jiffies: 424130
+Nice Jiffies: 60
+System Jiffies: 120243
+Idle Jiffies: 14924902
+Uptime (seconds): 26965.440000
+Ticks per second: 100
