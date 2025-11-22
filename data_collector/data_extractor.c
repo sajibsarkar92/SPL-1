@@ -21,78 +21,75 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
     }
     
     char temp_name[64];
-    
+
+    /* 
+       Parse only the fields we need and that exist in ProcessInfo:
+       - comm (quoted, may contain spaces but in /proc/stat it's in parentheses)
+       - ppid (field 4)
+       - utime (field 14)
+       - stime (field 15)
+       - starttime (field 22)
+
+       The format uses many %* to skip fields we don't care about.
+    */
     int read = fscanf(file, 
-        "%*d "          // pid
-        "%63s "         // comm
-        "%*c "          // state
-        "%d "          // ppid
-        "%*d "          // pgrp
-        "%*d "          // session
-        "%*d "          // tty_nr
-        "%*d "          // tpgid
-        "%*u "          // flags
-        "%*lu "         // minflt
-        "%*lu "         // cminflt
-        "%*lu "         // majflt
-        "%*lu "         // cmajflt
-        "%ld "          // utime
-        "%ld "          // stime
-        "%ld "          // cutime
-        "%ld "          // cstime
-        "%*ld "         // priority
-        "%*ld "         // nice
-        "%*ld "         // num_threads
-        "%*ld "         // itrealvalue
-        "%ld",          // starttime
+        "%*d "              /* pid */
+        "%63s "             /* comm (e.g. "(bash)") */
+        "%*c "              /* state */
+        "%d "               /* ppid (field 4) */
+        "%*d %*d %*d %*d "  /* pgrp, session, tty_nr, tpgid */
+        "%*u %*lu %*lu %*lu %*lu " /* flags, minflt, cminflt, majflt, cmajflt */
+        "%ld "              /* utime (field 14) */
+        "%ld "              /* stime (field 15) */
+        "%*ld %*ld %*ld %*ld " /* priority, nice, num_threads, itrealvalue (skip) */
+        "%ld",              /* starttime (field 22) */
         temp_name,
         &info->ppid,
         &info->utime,
         &info->stime,
-        &info->cutime,
-        &info->cstime,
         &info->starttime);
 
-        // clean up the parentheses around the name
+    /* clean up the parentheses around the name if present */
     size_t len = strlen(temp_name);
     if (len > 0 && temp_name[0] == '(') {
-        temp_name[len - 1] = '\0';  // Remove trailing ')'
-        memmove(temp_name, temp_name + 1, len - 1);  // Remove leading '('
+        if (temp_name[len - 1] == ')') temp_name[len - 1] = '\0';  // Remove trailing ')'
+        memmove(temp_name, temp_name + 1, strlen(temp_name));  // Remove leading '('
     }
 
     strncpy(info->comm, temp_name, sizeof(info->comm) - 1);
     info->comm[sizeof(info->comm) - 1] = '\0';
-    if (read != 7) {
-    fclose(file);
-    return -1;
+
+    if (read != 5) { /* we expect 5 scanned items: comm, ppid, utime, stime, starttime */
+        fclose(file);
+        return -1;
     }
     fclose(file);
     return 0;
     
 }
 
-int read_cpu_info(SystemCpuInfo *cpu_info) {
-    FILE *file = fopen("/proc/stat", "r");
-    if (!file) {
-        return -1;
-    }
+// int read_cpu_info(SystemCpuInfo *cpu_info) {
+//     FILE *file = fopen("/proc/stat", "r");
+//     if (!file) {
+//         return -1;
+//     }
 
-    char line[256];
-    if (fgets(line, sizeof(line), file)) {
-        // Parse the first line starting with "cpu"
-        if (sscanf(line, "cpu %lu %lu %lu %lu",
-                   &cpu_info->user,
-                   &cpu_info->nice,
-                   &cpu_info->system,
-                   &cpu_info->idle) == 4) {
-            fclose(file);
-            return 0;
-        }
-    }
+//     char line[256];
+//     if (fgets(line, sizeof(line), file)) {
+//         // Parse the first line starting with "cpu"
+//         if (sscanf(line, "cpu %lu %lu %lu %lu",
+//                    &cpu_info->user,
+//                    &cpu_info->nice,
+//                    &cpu_info->system,
+//                    &cpu_info->idle) == 4) {
+//             fclose(file);
+//             return 0;
+//         }
+//     }
 
-    fclose(file);
-    return -1;
-}
+//     fclose(file);
+//     return -1;
+// }
 
 int read_system_uptime(SystemCpuInfo *cpu_info){
     FILE *file = fopen("/proc/uptime", "r");
@@ -109,7 +106,6 @@ int read_system_uptime(SystemCpuInfo *cpu_info){
     return 0;
 }
 
-// data_collector/data_extractor.c
 
 int read_total_system_memory(SystemCpuInfo *info) {
     FILE *file = fopen("/proc/meminfo", "r");
@@ -133,7 +129,7 @@ int read_total_system_memory(SystemCpuInfo *info) {
     }
 
     fclose(file);
-    return -1; // Failure to find MemTotal
+    return -1; 
 }
 
 
@@ -246,10 +242,10 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     struct dirent *entry;
     size_t count = 0;
 
-    if (read_cpu_info(system_info) != 0) {
-        // upon failure, exit here
-        return -1;
-    }
+    // if (read_cpu_info(system_info) != 0) {
+    //     // upon failure, exit here
+    //     return -1;
+    // }
     if(read_system_uptime(system_info) != 0){
         // same here
         return -1;
@@ -352,25 +348,18 @@ void print_raw_data_to_csv(ProcessInfo *list, int count) {
         return;
     }
 
-    // Print System CPU Totals (as a header/context row)
-    // fprintf(file, "SYSTEM_INFO,USER,NICE,SYSTEM,IDLE,UPTIME,\n");
-    // fprintf(file, "CPU_JIFFIES,%ld,%ld,%ld,%ld,%Lf\n\n",
-    //     sys_info.user, sys_info.nice, sys_info.system, sys_info.idle,sys_info.uptime);
+    /* Adjusted header to match ProcessInfo (no CUTIME/CSTIME fields) */
+    fprintf(file, "PID,NAME,COMM,PPID,UTIME,STIME,STARTTIME,VmRSS_KB\n");
 
-    // Print Process Data Header
-    fprintf(file, "PID,NAME,COMM,PPID,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB\n");
-
-    // Print Process Rows
+    /* Print Process Rows matching the header exactly */
     for (int i = 0; i < count; i++) {
-        fprintf(file, "%d,\"%s\",\"%s\",%d,%ld,%ld,%ld,%ld,%ld,%ld\n",
+        fprintf(file, "%d,\"%s\",\"%s\",%d,%ld,%ld,%ld,%ld\n",
             list[i].pid,
             list[i].name,
             list[i].comm,
             list[i].ppid,
             list[i].utime,
             list[i].stime,
-            list[i].cutime,
-            list[i].cstime,
             list[i].starttime,
             list[i].rss_kb);
     }
@@ -390,11 +379,11 @@ int write_system_info(SystemCpuInfo sys_info){
 
     unsigned long HZ = sysconf(_SC_CLK_TCK);
 
-    fprintf(file, "System CPU Information:\n");
-    fprintf(file, "User Jiffies: %lu\n", sys_info.user);
-    fprintf(file, "Nice Jiffies: %lu\n", sys_info.nice);
-    fprintf(file, "System Jiffies: %lu\n", sys_info.system);
-    fprintf(file, "Idle Jiffies: %lu\n", sys_info.idle);
+    // fprintf(file, "System CPU Information:\n");
+    // fprintf(file, "User Jiffies: %lu\n", sys_info.user);
+    // fprintf(file, "Nice Jiffies: %lu\n", sys_info.nice);
+    // fprintf(file, "System Jiffies: %lu\n", sys_info.system);
+    // fprintf(file, "Idle Jiffies: %lu\n", sys_info.idle);
     fprintf(file, "Uptime (seconds): %Lf\n", sys_info.uptime);
     fprintf(file, "Ticks per second: %lu\n", HZ);
     fprintf(file, "Total Memory (KB): %lu\n", sys_info.total_mem_kb);

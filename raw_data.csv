@@ -1,122 +1,85 @@
-PID,NAME,COMM,PPID,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB
-2129,"gnome-keyring-daemon","gnome-keyring-d",1,11,3,0,0,4704,6844
-2150,"gdm-wayland-session","gdm-wayland-ses",2088,0,1,0,0,4736,5600
-2154,"dbus-broker-launch","dbus-broker-lau",2109,2,2,0,0,4737,3816
-2161,"dbus-broker","dbus-broker",2154,59,64,0,0,4740,4192
-2166,"gnome-session-binary","gnome-session-b",2150,2,1,2,5,4741,12120
-2218,"gnome-session-ctl","gnome-session-c",2109,0,0,0,0,4770,4772
-2219,"uresourced","uresourced",2109,24,15,0,0,4770,9024
-2222,"gnome-session-binary","gnome-session-b",2109,22,11,21,12,4773,12956
-2225,"gvfsd","gvfsd",2109,5,2,0,0,4774,7792
-2235,"gvfsd-fuse","gvfsd-fuse",2109,1,0,0,0,4777,6392
-2246,"pipewire","pipewire",2109,63,76,0,0,4779,10232
-2247,"wireplumber","wireplumber",2109,64,14,0,0,4779,19988
-2281,"gnome-shell","gnome-shell",2109,148535,67177,0,0,4787,153188
-2333,"xdg-permission-store","xdg-permission-",2109,0,0,0,0,4836,5876
-2334,"at-spi-bus-launcher","at-spi-bus-laun",2109,1,1,0,0,4839,6644
-2344,"dbus-broker-launch","dbus-broker-lau",2334,0,0,0,0,4840,3816
-2345,"dbus-broker","dbus-broker",2344,1,2,0,0,4841,2908
-2346,"at-spi2-registryd","at-spi2-registr",2109,2,1,0,0,4848,6608
-2363,"gnome-shell-calendar-server","gnome-shell-cal",2109,14,5,0,0,4877,14324
-2365,"dconf-service","dconf-service",2109,6,3,0,0,4882,5796
-2374,"evolution-source-registry","evolution-sourc",2109,20,10,0,0,4885,22352
-2387,"gjs","gjs",2109,33,8,0,0,4891,19976
-2406,"ibus-daemon","ibus-daemon",2109,7754,1824,0,0,4905,9292
-2407,"gsd-a11y-settings","gsd-a11y-settin",2109,2,1,0,0,4906,6416
-2408,"gsd-color","gsd-color",2109,50,30,0,0,4907,16760
-2412,"gsd-datetime","gsd-datetime",2109,3,1,0,0,4907,10256
-2416,"gsd-housekeeping","gsd-housekeepin",2109,158,62,0,0,4907,7696
-2423,"gsd-keyboard","gsd-keyboard",2109,12,4,0,0,4908,15628
-2427,"gsd-media-keys","gsd-media-keys",2109,50,14,0,0,4908,18380
-2429,"gsd-power","gsd-power",2109,48,15,0,0,4908,17808
-2434,"gsd-print-notifications","gsd-print-notif",2109,4,3,0,0,4909,10944
-2440,"evolution-alarm-notify","evolution-alarm",2222,38,8,0,0,4910,30800
-2441,"gsd-rfkill","gsd-rfkill",2109,8,3,0,0,4910,6084
-2448,"gsd-screensaver-proxy","gsd-screensaver",2109,2,1,0,0,4911,6044
-2454,"gsd-sharing","gsd-sharing",2109,389,75,0,0,4911,10632
-2463,"gsd-smartcard","gsd-smartcard",2109,3,2,0,0,4913,9388
-2468,"gsd-sound","gsd-sound",2109,3,2,0,0,4913,7984
-2472,"gsd-usb-protection","gsd-usb-protect",2109,4,2,0,0,4914,6844
-2474,"gnome-software","gnome-software",2222,1427,126,35,13,4914,104400
-2481,"gsd-wacom","gsd-wacom",2109,14,5,0,0,4915,16676
-2506,"gsd-disk-utility-notify","gsd-disk-utilit",2222,6,2,0,0,4917,6660
-2543,"ibus-dconf","ibus-dconf",2406,0,0,0,0,4921,6368
-2549,"ibus-extension-gtk3","ibus-extension-",2406,2068,408,0,0,4921,16740
-2610,"ibus-portal","ibus-portal",2109,3,1,0,0,4931,6760
-2611,"abrt-applet","abrt-applet",2109,16,5,0,0,4931,15280
-2612,"gjs","gjs",2109,14,4,0,0,4931,19020
-2648,"gvfs-udisks2-volume-monitor","gvfs-udisks2-vo",2109,49,19,0,0,4936,12268
-2700,"gvfs-mtp-volume-monitor","gvfs-mtp-volume",2109,1,1,0,0,4954,5936
-2710,"gvfs-gphoto2-volume-monitor","gvfs-gphoto2-vo",2109,1,1,0,0,4957,6616
-2712,"goa-daemon","goa-daemon",2109,10,3,0,0,4958,17056
-2717,"gvfs-goa-volume-monitor","gvfs-goa-volume",2109,0,0,0,0,4962,6040
-2724,"goa-identity-service","goa-identity-se",2109,108,257,0,0,4965,10296
-2729,"gvfs-afc-volume-monitor","gvfs-afc-volume",2109,24,87,0,0,4967,7188
-2750,"evolution-calendar-factory","evolution-calen",2109,21,10,0,0,4975,16396
-2761,"ibus-engine-simple","ibus-engine-sim",2406,2297,589,0,0,4980,6316
-2796,"evolution-addressbook-factory","evolution-addre",2109,11,5,0,0,4990,18144
-2806,"pipewire-pulse","pipewire-pulse",2109,68,98,0,0,4993,14420
-2883,"gsd-printer","gsd-printer",2109,4,2,0,0,5028,13976
-2911,"xdg-desktop-portal","xdg-desktop-por",2109,71,51,0,0,5053,12288
-2921,"xdg-document-portal","xdg-document-po",2109,4,2,0,0,5058,6412
-2938,"xdg-desktop-portal-gnome","xdg-desktop-por",2109,164,44,0,0,5065,23524
-2974,"xdg-desktop-portal-gtk","xdg-desktop-por",2109,72,25,0,0,5114,16708
-3050,"gvfsd-metadata","gvfsd-metadata",2109,0,1,0,0,5180,6380
-3142,"code","code",2281,30145,8986,28,14,6675,143308
-3149,"code","code",3142,3,2,0,0,6729,27580
-3150,"code","code",3142,3,3,0,0,6729,29604
-3152,"code","code",3150,0,0,0,0,6741,5752
-3167,"chrome_crashpad_handler","chrome_crashpad",2109,0,1,0,0,6778,2572
-3170,"Xwayland","Xwayland",2281,31862,26714,1,0,6780,42080
-3177,"gsd-xsettings","gsd-xsettings",2109,107,27,0,1,6791,21736
-3194,"ibus-x11","ibus-x11",2109,33,8,0,0,6812,16256
-3211,"mutter-x11-frames","mutter-x11-fram",2281,4209,1578,0,0,6816,39152
-3245,"code","code",3149,91150,26583,0,0,6838,77696
-3254,"exe","code",3142,1457,944,0,0,6839,40432
-3299,"code","code",3152,323676,24906,0,0,6899,551020
-3344,"exe","code",3142,2896,773,25,12,7048,77900
-3345,"exe","code",3142,1520,1021,0,0,7048,60896
-3346,"exe","code",3142,74046,12431,435,4320,7049,1088324
-3441,"cpptools","cpptools",3346,24369,6839,8,20,7268,41940
-3551,"exe","code",3142,7530,5020,235,662,7959,73944
-3584,"python3","python3",2406,140,14,0,0,7994,21268
-3596,"bash","bash",3551,20,23,484,869,8038,5892
-4095,"bash","brave-browser-s",2281,0,1,0,0,34153,3372
-4101,"cat","cat",4095,0,0,0,0,34155,1848
-4102,"cat","cat",4095,0,0,0,0,34155,1764
-4103,"brave","brave",4095,35812,11249,74,80,34155,301288
-4105,"chrome_crashpad_handler","chrome_crashpad",2109,0,1,0,0,34282,2348
-4107,"chrome_crashpad_handler","chrome_crashpad",2109,0,0,0,0,34284,2212
-4113,"brave --type=zygote --no-zygote-sandbox --string-annotations --","brave",4103,6,5,0,0,34286,36024
-4114,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",4103,7,4,0,0,34286,39620
-4116,"brave --type=zygote --string-annotations --crashpad-handler-pid","brave",4114,1,22,7975,1345,34307,9136
-4146,"brave --type=gpu-process --string-annotations --crashpad-handle","brave",4113,49444,17435,0,0,34342,146092
-4147,"brave --type=utility --utility-sub-type=network.mojom.NetworkSe","brave",4103,4301,2470,0,0,34342,94612
-4159,"brave --type=utility --utility-sub-type=storage.mojom.StorageSe","brave",4116,245,132,0,0,34359,50012
-4205,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,207188,10821,0,0,34408,845048
-4278,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,892,216,0,0,34519,162540
-4309,"brave --type=utility --utility-sub-type=audio.mojom.AudioServic","brave",4103,276,147,0,0,34820,55632
-4323,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,2084,547,0,0,35037,194768
-4353,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,1223,157,0,0,35246,211540
-4380,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,6132,597,0,0,35288,221800
-4443,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,28155,1693,0,0,35855,371948
-4758,"nautilus","nautilus",2109,1100,202,0,4,203221,58868
-4762,"gvfsd-trash","gvfsd-trash",2225,3,1,0,0,203232,8792
-4782,"tracker-miner-fs-3","tracker-miner-f",2109,24,10,8,4,203268,13864
-4822,"gvfsd-recent","gvfsd-recent",2225,4,1,0,0,203307,8728
-4832,"gvfsd-network","gvfsd-network",2225,5,1,0,0,203314,9228
-4839,"gvfsd-dnssd","gvfsd-dnssd",2225,6,3,0,0,203317,8960
-4847,"gvfsd-wsdd","gvfsd-wsdd",2225,66,31,0,0,203322,8568
-4852,"python3","wsdd",4847,112,34,0,0,203324,14072
-5440,"code","code",3346,199,53,0,0,1522500,61092
-9870,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,1035,150,0,0,2798649,207364
-10455,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,25929,1741,0,0,2973537,304024
-11850,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,1958,195,0,0,3261058,222900
-12319,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,38216,1808,0,0,3405124,448760
-12342,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,18,11,0,0,3405729,63736
-13082,"VQ6B1EUZqoCU04zoRU= --change-stack-guard-on-fork=enable --brave","brave",4116,399,92,0,0,3517568,141200
-15763,"cpptools-srv","cpptools-srv",2109,57,44,0,0,4405490,22844
-16234,"cpptools-srv","cpptools-srv",2109,140,93,0,0,4510921,24652
-16926,"oosplash","oosplash",2109,1,2,13,8,4649341,6216
-16958,"soffice.bin","soffice.bin",16926,490,34,0,0,4649372,259188
-17051,"my_program","my_program",3596,7,27,0,0,4684350,1864
+PID,NAME,COMM,PPID,UTIME,STIME,STARTTIME,VmRSS_KB
+2122,"gnome-keyring-daemon","gnome-keyring-d",1,6,1,5,7420
+2142,"gdm-wayland-session","gdm-wayland-ses",2093,0,0,4,5920
+2147,"dbus-broker-launch","dbus-broker-lau",2102,2,1,1,3884
+2153,"dbus-broker","dbus-broker",2147,14,9,1,4312
+2158,"gnome-session-binary","gnome-session-b",2142,2,2,5,14696
+2210,"gnome-session-ctl","gnome-session-c",2102,0,0,2,5104
+2211,"uresourced","uresourced",2102,2,3,4,8832
+2215,"gnome-session-binary","gnome-session-b",2102,10,6,5,15452
+2217,"gvfsd","gvfsd",2102,2,1,4,8616
+2223,"gvfsd-fuse","gvfsd-fuse",2102,0,0,7,6384
+2238,"pipewire","pipewire",2102,4,2,3,12888
+2239,"wireplumber","wireplumber",2102,15,7,9,26080
+2276,"gnome-shell","gnome-shell",2102,489,138,22,237136
+2324,"xdg-permission-store","xdg-permission-",2102,0,0,4,5860
+2330,"at-spi-bus-launcher","at-spi-bus-laun",2102,1,1,5,6880
+2336,"dbus-broker-launch","dbus-broker-lau",2330,0,0,1,3996
+2337,"dbus-broker","dbus-broker",2336,0,0,1,2804
+2338,"at-spi2-registryd","at-spi2-registr",2102,2,0,4,6792
+2350,"gnome-shell-calendar-server","gnome-shell-cal",2102,6,5,7,20424
+2361,"dconf-service","dconf-service",2102,1,0,4,6020
+2374,"evolution-source-registry","evolution-sourc",2102,22,7,5,68160
+2383,"gjs","gjs",2102,13,2,12,29472
+2388,"ibus-daemon","ibus-daemon",2102,16,3,4,13452
+2391,"gsd-a11y-settings","gsd-a11y-settin",2102,2,1,5,6416
+2405,"gsd-color","gsd-color",2102,8,3,6,23668
+2410,"gsd-datetime","gsd-datetime",2102,2,2,5,10952
+2415,"gsd-housekeeping","gsd-housekeepin",2102,6,3,5,8180
+2423,"gsd-keyboard","gsd-keyboard",2102,6,2,6,22244
+2427,"gsd-media-keys","gsd-media-keys",2102,7,3,6,25576
+2436,"gsd-power","gsd-power",2102,9,4,6,23980
+2442,"gsd-print-notifications","gsd-print-notif",2102,2,2,4,11952
+2444,"gsd-rfkill","gsd-rfkill",2102,1,1,4,6560
+2445,"evolution-alarm-notify","evolution-alarm",2215,37,9,9,85304
+2448,"gsd-screensaver-proxy","gsd-screensaver",2102,1,0,4,6160
+2454,"gsd-sharing","gsd-sharing",2102,3,1,5,10940
+2462,"gnome-software","gnome-software",2215,1578,115,11,399084
+2466,"gsd-smartcard","gsd-smartcard",2102,1,1,5,11348
+2473,"gsd-sound","gsd-sound",2102,1,0,5,8896
+2476,"gsd-usb-protection","gsd-usb-protect",2102,0,1,5,7288
+2495,"gsd-wacom","gsd-wacom",2102,7,2,6,24236
+2511,"gsd-disk-utility-notify","gsd-disk-utilit",2215,1,0,4,7324
+2577,"ibus-dconf","ibus-dconf",2388,0,0,5,6536
+2578,"ibus-extension-gtk3","ibus-extension-",2388,224,3,6,33528
+2602,"abrt-applet","abrt-applet",2102,4,1,5,19048
+2603,"gjs","gjs",2102,5,1,12,29340
+2604,"gvfs-udisks2-volume-monitor","gvfs-udisks2-vo",2102,5,2,5,13408
+2609,"ibus-portal","ibus-portal",2102,1,1,4,6752
+2650,"gvfs-mtp-volume-monitor","gvfs-mtp-volume",2102,0,0,4,6460
+2666,"gvfs-gphoto2-volume-monitor","gvfs-gphoto2-vo",2102,0,1,4,6852
+2685,"gvfs-goa-volume-monitor","gvfs-goa-volume",2102,1,0,4,6036
+2695,"goa-daemon","goa-daemon",2102,3,1,5,22452
+2722,"goa-identity-service","goa-identity-se",2102,0,0,5,10148
+2723,"gvfs-afc-volume-monitor","gvfs-afc-volume",2102,0,0,5,7560
+2765,"ibus-engine-simple","ibus-engine-sim",2388,1,0,4,6960
+2832,"pipewire-pulse","pipewire-pulse",2102,1,0,3,9128
+2852,"gsd-printer","gsd-printer",2102,1,0,4,16460
+2872,"evolution-calendar-factory","evolution-calen",2102,9,4,10,26672
+2895,"xdg-desktop-portal","xdg-desktop-por",2102,7,3,7,14056
+2905,"evolution-addressbook-factory","evolution-addre",2102,8,4,7,29828
+2914,"xdg-document-portal","xdg-document-po",2102,1,1,8,6408
+2932,"xdg-desktop-portal-gnome","xdg-desktop-por",2102,15,4,6,66552
+2975,"xdg-desktop-portal-gtk","xdg-desktop-por",2102,8,1,6,27216
+3021,"epiphany-webapp-provider","epiphany-webapp",2102,6,4,4,62560
+3037,"gvfsd-metadata","gvfsd-metadata",2102,0,0,4,5980
+3068,"code","code",2276,283,96,41,245280
+3075,"code","code",3068,2,1,1,78964
+3076,"code","code",3068,2,1,1,79684
+3078,"code","code",3076,0,0,1,17024
+3094,"chrome_crashpad_handler","chrome_crashpad",2102,0,0,3,3464
+3097,"Xwayland","Xwayland",2276,44,33,5,71216
+3104,"gsd-xsettings","gsd-xsettings",2102,13,3,8,61204
+3120,"ibus-x11","ibus-x11",2102,7,1,5,28408
+3125,"mutter-x11-frames","mutter-x11-fram",2276,22,3,10,73420
+3169,"code","code",3075,186,68,15,109060
+3178,"exe","code",3068,25,17,15,105404
+3200,"code","code",3078,1167,137,19,488436
+3279,"exe","code",3068,1009,141,20,729644
+3291,"exe","code",3068,384,89,20,202120
+3293,"exe","code",3068,60,10,22,134228
+3347,"exe","code",3068,119,21,20,141316
+3397,"bash","bash",3347,5,2,1,5956
+3592,"my_program","my_program",3397,5,13,1,1612
+3600,"cpptools","cpptools",3279,63,38,22,44548
+3658,"cpptools-srv","cpptools-srv",2102,7,6,8,24580

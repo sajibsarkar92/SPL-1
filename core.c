@@ -5,6 +5,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+pthread_mutex_t file_access_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void * monitor_thread  (void *arg) {
+    int interval = *((int *)arg);
+    while (1) {
+        run_process_monitor(interval);
+        // sleep(interval);
+    }
+    return NULL;
+}
 
 
 int raw_data_to_csv(void) {
@@ -17,9 +27,12 @@ int raw_data_to_csv(void) {
 	count = extract_processes(&proc_list, &sys_totals);
 
 	if (count > 0) {
+
+        pthread_mutex_lock(&file_access_mutex);
 		printf("✅ Successfully extracted %d processes.\n", count);
 		print_raw_data_to_csv(proc_list, count);
 		write_system_info(sys_totals);
+        pthread_mutex_unlock(&file_access_mutex);
 
 		free(proc_list);
 		return 0;
@@ -60,8 +73,6 @@ int run_process_monitor(int interval) {
         if (resource_list != NULL && final_count > 0) {
             printf("✅ Resource calculation completed for %d processes.\n", final_count);
             
-            
-			// we just write the rewource data to resource.csv file to check
 
 			print_cal_processes_to_csv(resource_list, final_count);
 
@@ -84,3 +95,14 @@ int run_process_monitor(int interval) {
     return 0; // Return success/failure code
 }
 
+pthread_t start_background_monitoring(int interval) {
+    pthread_t thread_id;
+    int *arg = malloc(sizeof(*arg));
+    *arg = interval;
+    if(pthread_create(&thread_id, NULL, monitor_thread, arg)!=0){
+        perror("Failed to create monitoring thread");
+        free(arg);
+        return 0; // Indicate failure
+    }
+    return thread_id;
+}

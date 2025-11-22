@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <string.h> // added for memcpy/strncpy
+#include <string.h>
 
-#define HASH_MAP_BUCKETS 100003 // A large prime number for better distribution
+#define HASH_MAP_BUCKETS 100003 
 
 static HashMapNode* hashTable[HASH_MAP_BUCKETS]; // single global table
 
@@ -110,7 +110,6 @@ void freeHashMap(void) {
         }
         hashTable[i] = NULL;
     }
-    // optional: printf("Hash map memory successfully freed.\n");
 }
 
 
@@ -123,25 +122,32 @@ ProcessResourceInfo* calculate_individual_resources(
         if (final_count_ptr) *final_count_ptr = 0;
         return NULL;
     }
+    long ticks_per_second = sysconf(_SC_CLK_TCK); 
 
-    unsigned long total_system_jiffies1 = sys_info1.user + sys_info1.nice + sys_info1.system + sys_info1.idle;
-    unsigned long total_system_jiffies2 = sys_info2.user + sys_info2.nice + sys_info2.system + sys_info2.idle  ;
-    unsigned long delta_system_jiffies = total_system_jiffies2 - total_system_jiffies1;
+    unsigned long total_system_time1= sys_info1.uptime;
+    unsigned long total_system_time2 = sys_info2.uptime ;
+    unsigned long delta_system_time = (total_system_time2 - total_system_time1);
+
+    if(delta_system_time <= 0.00L){
+        delta_system_time = 0.001L;
+    }
     
-    int cores = sysconf(_SC_NPROCESSORS_ONLN);
-    if (cores < 1) cores = 1;
-    long ticks_per_second = sysconf(_SC_CLK_TCK); // HZ
+    // int cores = sysconf(_SC_NPROCESSORS_ONLN);
+    // if (cores < 1){
+    //     cores = 1;
+    // } 
+    unsigned long delta_system_jiffies = delta_system_time * (unsigned long)ticks_per_second ;
 
     ProcessResourceInfo *final_list = NULL;
     int calculated_count = 0;
     int capacity = 64; 
     
-    final_list = (ProcessResourceInfo *) malloc (capacity * sizeof(ProcessResourceInfo));
-    if(final_list == NULL){
-        perror("Memory allocation failed for final list");
-        if (final_count_ptr) *final_count_ptr = 0;
-        return NULL;
-    }
+    final_list = (ProcessResourceInfo *) calloc (capacity, sizeof(ProcessResourceInfo)); /* zeroed */
+     if(final_list == NULL){
+         perror("Memory allocation failed for final list");
+         if (final_count_ptr) *final_count_ptr = 0;
+         return NULL;
+     }
 
     HashMapBuilder(list1, count1);
 
@@ -154,23 +160,28 @@ ProcessResourceInfo* calculate_individual_resources(
             if(calculated_count >= capacity){
                 capacity *= 2;
                 ProcessResourceInfo *temp = realloc(final_list, capacity * sizeof(ProcessResourceInfo));
-                if(temp == NULL){
-                    perror("Memory reallocation failed");
-                    break;
-                }
+                 if(temp == NULL){
+                     perror("Memory reallocation failed");
+                     break;
+                 }
+                /* zero the newly allocated portion to avoid garbage */
+                size_t old_size = (calculated_count) * sizeof(ProcessResourceInfo);
                 final_list = temp;
-            }
+                memset((char*)final_list + old_size, 0, (capacity * sizeof(ProcessResourceInfo)) - old_size);
+             }
 
             ProcessResourceInfo *res = &final_list[calculated_count];
+            /* defensive: ensure clean start (calloc already zeroed, but keep this for clarity) */
+            // memset(res, 0, sizeof(*res));
 
-            unsigned long total_proc_jiffies1 = proc1->utime + proc1->stime + proc1->cutime + proc1->cstime;
-            unsigned long total_proc_jiffies2 = proc2->utime + proc2->stime + proc2->cutime + proc2->cstime;
+            unsigned long total_proc_jiffies1 = proc1->utime + proc1->stime ;
+            unsigned long total_proc_jiffies2 = proc2->utime + proc2->stime ;
             unsigned long delta_proc_jiffies = total_proc_jiffies2 - total_proc_jiffies1;
 
             if(delta_system_jiffies > 0){
-                res->cpu_percentage = ((long double)delta_proc_jiffies / (long double)delta_system_jiffies) * 100.0 * (long double)cores;
+                res->cpu_percentage = ((long double)delta_proc_jiffies / (long double)delta_system_jiffies) * 100.0L;
             } else {
-                res->cpu_percentage = 0.0;
+                res->cpu_percentage = 0.0L;
             }
 
             unsigned long total_mem_kb = sys_info2.total_mem_kb;
@@ -190,8 +201,9 @@ ProcessResourceInfo* calculate_individual_resources(
             res->current_process_uptime = proc_runtime;
 
             // Copy data from proc2 into final_list entry
-            res->rss_kb = proc2->rss_kb;
-            res->pss_kb = proc2->pss_kb;
+            res->rss_kb = (unsigned long)proc2->rss_kb;
+            res->pss_kb = (unsigned long)proc2->pss_kb;
+
             res->pid = proc2->pid;
             res->ppid = proc2->ppid;
             res->starttime = proc2->starttime;
@@ -212,8 +224,6 @@ ProcessResourceInfo* calculate_individual_resources(
 }
 
 
-
-
 void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count) {
     const char *filename = "resource.csv";
     FILE *file = fopen(filename, "w");
@@ -227,6 +237,11 @@ void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count) {
     for (int i = 0; i < count; i++) {
         const ProcessResourceInfo *res = &list[i];
 
+        /* types: pid(int), ppid(int), name(string), starttime(long),
+           cpu_percentage(long double), uptime(long double),
+           rss_kb(unsigned long), pss_kb(unsigned long),
+           rss_percentage(long double), pss_percentage(long double)
+        */
         fprintf(file, "%d,%d,\"%s\",%ld,%.8Lf,%.2Lf,%lu,%lu,%.2Lf,%.2Lf\n",
             res->pid,
             res->ppid,
