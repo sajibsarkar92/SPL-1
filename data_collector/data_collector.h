@@ -14,6 +14,8 @@ typedef struct {
     long starttime;
     long rss_kb;
     long pss_kb;
+    int sid;
+    int uid;
 } ProcessInfo;
 
 typedef struct {
@@ -24,6 +26,34 @@ typedef struct {
     unsigned long total_mem_kb;
     long double uptime;
 } SystemCpuInfo;
+
+typedef struct{
+    int root_pid;
+    char root_name[64];
+    unsigned long long summed_pss_kb;
+    unsigned long long summed_delta_p;
+    int total_processes;
+} AppSummary;
+
+
+typedef struct {
+    long double uptime;
+    long snapshot_wall_time; // Needed for Delta E
+} SystemSnap;
+
+
+typedef struct {
+    int pid;
+    int ppid;
+    int sid;
+    int uid;
+    char name[128];
+    unsigned long jiffies_total;
+    unsigned long starttime;
+    unsigned long pss_kb;
+    unsigned long calculated_delta_p;
+
+}ProcessRaw;
 
 typedef struct {
     int pid;

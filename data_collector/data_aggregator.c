@@ -1,97 +1,123 @@
-#include "data_collector.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <time.h>
+#include "data_collector.h"
 
-/* Aggregate info per application name */
-typedef struct {
-    char name[128];
-    unsigned long total_rss_kb;
-    unsigned long total_utime;
-    unsigned long total_stime;
-    unsigned long count;
-} AggEntry;
 
-/* Read raw_data.csv (format matching print_raw_data_to_csv) and write aggregate.csv */
-int aggregate_raw_to_csv(void) {
-    const char *infile = "raw_data.csv";
-    const char *outfile = "aggregate.csv";
-    FILE *fin = fopen(infile, "r");
-    if (!fin) return -1;
+int get_system_pid_max() {
+    FILE *f = fopen("/proc/sys/kernel/pid_max", "r");
+    int pid_max = 32768; // Default fallback
+    if (f) {
+        if (fscanf(f, "%d", &pid_max) != 1) pid_max = 32768;
+        fclose(f);
+    }
+    // Safety clamp for unexpected values
+    if (pid_max < 32768) pid_max = 32768; 
+    return pid_max;
 
-    char line[1024];
-    /* skip header line */
-    if (!fgets(line, sizeof(line), fin)) {
-        fclose(fin);
+    if (pid_max > 4194304) pid_max = 4194304;
+}
+
+
+int load_raw_csv(char *filename, ProcessRaw **list_out){
+    FILE *file = fopen(filename, "r");
+
+    if(!file){
+        perror("Error opening raw_data.csv for reading");
         return -1;
     }
 
-    AggEntry *entries = NULL;
-    size_t cap = 0, used = 0;
+    char line[1024];
+    int count = 0;
+    int capacity = 1024;
 
-    while (fgets(line, sizeof(line), fin)) {
-        /* expected CSV: PID,"NAME","COMM",PPID,UTIME,STIME,CUTIME,CSTIME,STARTTIME,VmRSS_KB */
-        int pid = 0, ppid = 0;
-        long utime = 0, stime = 0, cutime = 0, cstime = 0, starttime = 0, vmrss = 0;
-        char name[128] = {0};
-        char comm[128] = {0};
+    ProcessRaw *list = malloc(capacity * sizeof(ProcessRaw));
+    if(!list){
+        perror("Memory allocation failed");
+        fclose(file);
+        return -1;      
+    }
 
-        int scanned = sscanf(line,
-            "%d,\"%127[^\"]\",\"%127[^\"]\",%d,%ld,%ld,%ld,%ld,%ld,%ld",
-            &pid, name, comm, &ppid, &utime, &stime, &cutime, &cstime, &starttime, &vmrss);
+    // Skip header line
+    fgets(line, sizeof(line), file);
 
-        if (scanned < 10) {
-            /* Try fallback: some lines may not strictly match, skip them */
-            continue;
-        }
+    while(fgets(line,sizeof(line), file)){
+        if(count >= capacity){
+            capacity *=2;
+            ProcessRaw *temp = realloc(list, capacity * sizeof(ProcessRaw));
 
-        /* find or add entry by name */
-        size_t idx = 0;
-        for (; idx < used; ++idx) {
-            if (strcmp(entries[idx].name, name) == 0) break;
-        }
-        if (idx == used) {
-            /* new entry */
-            if (used >= cap) {
-                size_t new_cap = cap == 0 ? 64 : cap * 2;
-                AggEntry *tmp = realloc(entries, new_cap * sizeof(AggEntry));
-                if (!tmp) { free(entries); fclose(fin); return -1; }
-                entries = tmp; cap = new_cap;
+            if(!temp){
+                perror("Memory reallocation failed");
+                free(list);
+                fclose(file);
+                return -1;
             }
-            strncpy(entries[used].name, name, sizeof(entries[used].name)-1);
-            entries[used].name[sizeof(entries[used].name)-1] = '\0';
-            entries[used].total_rss_kb = 0;
-            entries[used].total_utime = 0;
-            entries[used].total_stime = 0;
-            entries[used].count = 0;
-            idx = used++;
+            list = temp;     
+        }
+        ProcessRaw *p = &list[count];
+
+        char temp_comm[128];
+        long temp_utime, temp_stime, temp_rss; 
+        
+        
+        int parsed = sscanf(line, 
+            "%d,\"%127[^\"]\",\"%127[^\"]\",%d,%d,%d,%lu,%ld,%ld,%lu,%lu,%ld", 
+            &p->pid, 
+            p->name, 
+            temp_comm, 
+            &p->ppid, 
+            &p->sid, 
+            &p->uid, 
+            &p->jiffies_total, 
+            &temp_utime, &temp_stime, 
+            &p->starttime,
+            &p->pss_kb,
+            &temp_rss 
+        );
+
+        
+        if (parsed >= 10) { 
+            count++;
+        } else {
+            fprintf(stderr, "Malformed line in CSV (Parsed %d/%d fields): %s", parsed, 12, line);
+            
         }
 
-        entries[idx].total_rss_kb += (vmrss > 0 ? (unsigned long)vmrss : 0UL);
-        entries[idx].total_utime += (utime > 0 ? (unsigned long)utime : 0UL);
-        entries[idx].total_stime += (stime > 0 ? (unsigned long)stime : 0UL);
-        entries[idx].count += 1;
+
+    }
+    fclose(file);
+    *list_out = list;
+    return count;
+
+}
+
+int read_sys_info(const char *filename, SystemSnap *info) {
+    FILE *f = fopen(filename, "r");
+    if (!f) {
+        perror("Error opening system info file");
+        return -1;
     }
 
-    fclose(fin);
-
-    /* Write aggregate CSV */
-    FILE *fout = fopen(outfile, "w");
-    if (!fout) { free(entries); return -1; }
-
-    fprintf(fout, "Name,ProcessCount,TotalRSS_KB,AvgRSS_KB,TotalUTIME,TotalSTIME\n");
-    for (size_t i = 0; i < used; ++i) {
-        unsigned long avg = entries[i].count ? (entries[i].total_rss_kb / entries[i].count) : 0;
-        fprintf(fout, "\"%s\",%lu,%lu,%lu,%lu,%lu\n",
-            entries[i].name,
-            entries[i].count,
-            entries[i].total_rss_kb,
-            avg,
-            entries[i].total_utime,
-            entries[i].total_stime);
+    info->snapshot_wall_time = 0;
+    info->uptime = 0.0L;
+    
+    char line[256];
+    while (fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "Snapshot Wall Time", 18) == 0) {
+            sscanf(line, "%*[^:]: %ld", &info->snapshot_wall_time);
+        }
     }
-
-    fclose(fout);
-    free(entries);
+    
+    fclose(f);
+    if (info->snapshot_wall_time == 0) {
+        info->snapshot_wall_time = time(NULL); 
+    }
+    
     return 0;
 }
+
+
+
+

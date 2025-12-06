@@ -33,18 +33,21 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
        The format uses many %* to skip fields we don't care about.
     */
     int read = fscanf(file, 
-        "%*d "              /* pid */
-        "%63s "             /* comm (e.g. "(bash)") */
-        "%*c "              /* state */
-        "%d "               /* ppid (field 4) */
-        "%*d %*d %*d %*d "  /* pgrp, session, tty_nr, tpgid */
-        "%*u %*lu %*lu %*lu %*lu " /* flags, minflt, cminflt, majflt, cmajflt */
-        "%ld "              /* utime (field 14) */
-        "%ld "              /* stime (field 15) */
+        "%*d "              /* pid (1) */
+        "%63s "             /* comm (2) */
+        "%*c "              /* state (3) */
+        "%d "               /* ppid (4) */
+        "%*d "              /* pgrp (5, skip) */
+        "%d "               /* **session (6) <-- ADDED** */
+        "%*d %*d %*d "      /* tty_nr, tpgid, flags (7, 8, 9, skip) */
+        "%*lu %*lu %*lu %*lu " /* minflt, cminflt, majflt, cmajflt (skip) */
+        "%ld "              /* utime (14) */
+        "%ld "              /* stime (15) */
         "%*ld %*ld %*ld %*ld " /* priority, nice, num_threads, itrealvalue (skip) */
-        "%ld",              /* starttime (field 22) */
+        "%ld",              /* starttime (22) */
         temp_name,
         &info->ppid,
+        &info->sid,         // <-- ADDED
         &info->utime,
         &info->stime,
         &info->starttime);
@@ -59,7 +62,7 @@ static int read_proc_stat(pid_t pid, ProcessInfo *info){
     strncpy(info->comm, temp_name, sizeof(info->comm) - 1);
     info->comm[sizeof(info->comm) - 1] = '\0';
 
-    if (read != 5) { /* we expect 5 scanned items: comm, ppid, utime, stime, starttime */
+    if (read != 6) { 
         fclose(file);
         return -1;
     }
@@ -134,9 +137,7 @@ int read_total_system_memory(SystemCpuInfo *info) {
 
 
 
-
-
-// 
+// data_extractor.c: read_proc_status
 int read_proc_status(pid_t pid, ProcessInfo *info){
     char path[256];
     snprintf(path, sizeof(path), "/proc/%d/status", pid);
@@ -147,20 +148,37 @@ int read_proc_status(pid_t pid, ProcessInfo *info){
     }
     
     char line[256];
+    int rss_found = 0;
+    int uid_found = 0;
+    
     while (fgets(line, sizeof(line), file)) {
         if (strncmp(line, "VmRSS:", 6) == 0) {
-            // Parse the VmRSS line
             long rss_kb;
             if (sscanf(line + 6, "%ld", &rss_kb) == 1) {
                 info->rss_kb = rss_kb;
-                fclose(file);
-                return 0;
+                rss_found = 1;
             }
+        } 
+        
+        else if (strncmp(line, "Uid:", 4) == 0) {
+            long uid;
+            // Scan for the first (real) UID value
+            if (sscanf(line + 4, " %ld", &uid) == 1) {
+                info->uid = (uid_t)uid;
+                uid_found = 1;
+            }
+        }
+        
+
+        if (rss_found && uid_found) {
+            fclose(file);
+            return 0;
         }
     }
     
     fclose(file);
-    return -1; 
+    // Return 0 only if both required fields were found
+    return (rss_found && uid_found) ? 0 : -1; 
 }
 
 
@@ -341,26 +359,34 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
 */
 
 
+// data_extractor.c: print_raw_data_to_csv
+
+
 void print_raw_data_to_csv(ProcessInfo *list, int count) {
-    FILE *file = fopen(CSV_FILENAME, "w");
+    FILE *file = fopen("raw_data.csv", "w");
+
     if (file == NULL) {
         perror("Error opening raw_data.csv for writing");
         return;
     }
+    fprintf(file, "PID,NAME,COMM,PPID,SID,UID,Jiffies_Total,UTIME,STIME,STARTTIME,PSS_KB,VmRSS_KB\n");
 
-    /* Adjusted header to match ProcessInfo (no CUTIME/CSTIME fields) */
-    fprintf(file, "PID,NAME,COMM,PPID,UTIME,STIME,STARTTIME,VmRSS_KB\n");
-
-    /* Print Process Rows matching the header exactly */
+   
     for (int i = 0; i < count; i++) {
-        fprintf(file, "%d,\"%s\",\"%s\",%d,%ld,%ld,%ld,%ld\n",
+        long jiffies_total = list[i].utime + list[i].stime;
+        
+        fprintf(file, "%d,\"%s\",\"%s\",%d,%d,%d,%ld,%ld,%ld,%ld,%ld,%ld\n",
             list[i].pid,
             list[i].name,
             list[i].comm,
             list[i].ppid,
+            list[i].sid,
+            list[i].uid,        
+            jiffies_total,     
             list[i].utime,
             list[i].stime,
             list[i].starttime,
+            list[i].pss_kb,    
             list[i].rss_kb);
     }
 
@@ -379,11 +405,6 @@ int write_system_info(SystemCpuInfo sys_info){
 
     unsigned long HZ = sysconf(_SC_CLK_TCK);
 
-    // fprintf(file, "System CPU Information:\n");
-    // fprintf(file, "User Jiffies: %lu\n", sys_info.user);
-    // fprintf(file, "Nice Jiffies: %lu\n", sys_info.nice);
-    // fprintf(file, "System Jiffies: %lu\n", sys_info.system);
-    // fprintf(file, "Idle Jiffies: %lu\n", sys_info.idle);
     fprintf(file, "Uptime (seconds): %Lf\n", sys_info.uptime);
     fprintf(file, "Ticks per second: %lu\n", HZ);
     fprintf(file, "Total Memory (KB): %lu\n", sys_info.total_mem_kb);
