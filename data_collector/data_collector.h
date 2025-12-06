@@ -16,6 +16,7 @@ typedef struct {
     long pss_kb;
     int sid;
     int uid;
+    unsigned long delta_p  ;
 } ProcessInfo;
 
 typedef struct {
@@ -42,18 +43,18 @@ typedef struct {
 } SystemSnap;
 
 
-typedef struct {
-    int pid;
-    int ppid;
-    int sid;
-    int uid;
-    char name[128];
-    unsigned long jiffies_total;
-    unsigned long starttime;
-    unsigned long pss_kb;
-    unsigned long calculated_delta_p;
+// typedef struct {
+//     int pid;
+//     int ppid;
+//     int sid;
+//     int uid;
+//     char name[128];
+//     unsigned long jiffies_total;
+//     unsigned long starttime;
+//     unsigned long pss_kb;
+//     unsigned long calculated_delta_p;
 
-}ProcessRaw;
+// }ProcessRaw;
 
 typedef struct {
     int pid;

@@ -8,7 +8,7 @@
 
 static int current_max_pid = 0;
 static int *root_cache = NULL;
-static ProcessRaw **pid_lookup = NULL;
+static ProcessInfo **pid_lookup = NULL;
 static AppSummary *app_summaries = NULL;
 
 
@@ -28,7 +28,7 @@ void get_system_pid_max() {
 }
 
 
-int load_raw_csv(char *filename, ProcessRaw **list_out){
+int load_raw_csv(char *filename, ProcessInfo **list_out){
     FILE *file = fopen(filename, "r");
 
     if(!file){
@@ -40,7 +40,7 @@ int load_raw_csv(char *filename, ProcessRaw **list_out){
     int count = 0;
     int capacity = 1024;
 
-    ProcessRaw *list = malloc(capacity * sizeof(ProcessRaw));
+    ProcessInfo *list = malloc(capacity * sizeof(ProcessInfo));
     if(!list){
         perror("Memory allocation failed");
         fclose(file);
@@ -53,7 +53,7 @@ int load_raw_csv(char *filename, ProcessRaw **list_out){
     while(fgets(line,sizeof(line), file)){
         if(count >= capacity){
             capacity *=2;
-            ProcessRaw *temp = realloc(list, capacity * sizeof(ProcessRaw));
+            ProcessInfo *temp = realloc(list, capacity * sizeof(ProcessInfo));
 
             if(!temp){
                 perror("Memory reallocation failed");
@@ -63,29 +63,30 @@ int load_raw_csv(char *filename, ProcessRaw **list_out){
             }
             list = temp;     
         }
-        ProcessRaw *p = &list[count];
+        ProcessInfo *p = &list[count];
 
         char temp_comm[128];
-        long temp_utime, temp_stime, temp_rss; 
+        long temp_utime, temp_stime, temp_rss,jiffies_ignored; 
         
         
         int parsed = sscanf(line, 
-            "%d,\"%127[^\"]\",\"%127[^\"]\",%d,%d,%d,%lu,%ld,%ld,%lu,%lu,%ld", 
+            "%d,\"%63[^\"]\",\"%63[^\"]\",%d,%d,%d,%ld,%ld,%ld,%ld,%ld,%ld", 
             &p->pid, 
             p->name, 
-            temp_comm, 
+            p->comm, 
             &p->ppid, 
             &p->sid, 
             &p->uid, 
-            &p->jiffies_total, 
-            &temp_utime, &temp_stime, 
+            &jiffies_ignored, // The CSV has 'total_jiffies', but ProcessInfo has utime/stime
+            &p->utime, 
+            &p->stime, 
             &p->starttime,
             &p->pss_kb,
-            &temp_rss 
+            &p->rss_kb 
         );
-
+        p->delta_p = 0;
         
-        if (parsed >= 10) { 
+        if (parsed >= 12) { 
             count++;
         } else {
             fprintf(stderr, "Malformed line in CSV (Parsed %d/%d fields): %s", parsed, 12, line);
@@ -154,7 +155,7 @@ int get_app_root(int pid){
     int root = pid;
 
     while(1){
-        ProcessRaw *current_process = pid_lookup[index];
+        ProcessInfo *current_process = pid_lookup[index];
 
         if(current_process == NULL){
             root = index;
@@ -168,7 +169,7 @@ int get_app_root(int pid){
             break;
         }
 
-        ProcessRaw *parent_process = NULL;
+        ProcessInfo *parent_process = NULL;
         
         // check for valid parent pid
         if(current_process ->ppid > 0 && current_process ->ppid < current_max_pid){
@@ -218,7 +219,7 @@ int initialize_root_cache_and_lookup(){
         root_cache[i] = -1;
     }
 
-    pid_lookup = malloc(sizeof(ProcessRaw*) * current_max_pid);
+    pid_lookup = malloc(sizeof(ProcessInfo*) * current_max_pid);
     if(pid_lookup == NULL){
         perror("Failed to allocate memory for PID lookup");
         free(root_cache);
@@ -233,9 +234,9 @@ int initialize_root_cache_and_lookup(){
 }
 
 
-void build_pid_lookup(ProcessRaw *process_list, int process_count){
+void build_pid_lookup(ProcessInfo *process_list, int process_count){
     for(int i=0; i<process_count; i++){
-        ProcessRaw *p = &process_list[i];
+        ProcessInfo *p = &process_list[i];
         if(p->pid >0 && p->pid < current_max_pid){
             pid_lookup[p->pid] = p;
         }

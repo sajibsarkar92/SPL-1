@@ -132,10 +132,8 @@ ProcessResourceInfo* calculate_individual_resources(
         delta_system_time = 0.001L;
     }
     
-    // int cores = sysconf(_SC_NPROCESSORS_ONLN);
-    // if (cores < 1){
-    //     cores = 1;
-    // } 
+    
+    
     unsigned long delta_system_jiffies = delta_system_time * (unsigned long)ticks_per_second ;
 
     ProcessResourceInfo *final_list = NULL;
