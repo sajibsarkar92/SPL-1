@@ -2,11 +2,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 #include <time.h>
 #include "data_collector.h"
 
+static int current_max_pid = 0;
+static int *root_cache = NULL;
+static ProcessRaw **pid_lookup = NULL;
+static AppSummary *app_summaries = NULL;
 
-int get_system_pid_max() {
+
+void get_system_pid_max() {
     FILE *f = fopen("/proc/sys/kernel/pid_max", "r");
     int pid_max = 32768; // Default fallback
     if (f) {
@@ -15,9 +21,10 @@ int get_system_pid_max() {
     }
     // Safety clamp for unexpected values
     if (pid_max < 32768) pid_max = 32768; 
-    return pid_max;
+    current_max_pid = pid_max;
 
     if (pid_max > 4194304) pid_max = 4194304;
+    current_max_pid = pid_max;
 }
 
 
@@ -118,6 +125,122 @@ int read_sys_info(const char *filename, SystemSnap *info) {
     return 0;
 }
 
+
+
+
+int is_shell(const char *name) {
+    if (strcmp(name, "bash") == 0) return 1;
+    if (strcmp(name, "sh") == 0) return 1;
+    if (strcmp(name, "zsh") == 0) return 1;
+    if (strcmp(name, "fish") == 0) return 1;
+    if (strcmp(name, "gnome-shell") == 0) return 1; // GUI Shell
+    return 0;
+}
+
+
+int get_app_root(int pid){
+
+    if(pid <=0 || pid >= current_max_pid){
+        return -1;
+    }
+
+    if(root_cache[pid] != -1){
+        return root_cache[pid];
+    }   
+
+    // Traverse up the process tree
+    // starting from pid until we find the root
+    int index = pid;
+    int root = pid;
+
+    while(1){
+        ProcessRaw *current_process = pid_lookup[index];
+
+        if(current_process == NULL){
+            root = index;
+            break;
+        } 
+
+        
+        // check for system or orphaned processes
+        if(current_process ->pid == 1 || current_process ->ppid == 0 || current_process ->ppid == current_process ->pid){
+            root = current_process ->pid;
+            break;
+        }
+
+        ProcessRaw *parent_process = NULL;
+        
+        // check for valid parent pid
+        if(current_process ->ppid > 0 && current_process ->ppid < current_max_pid){
+            parent_process = pid_lookup[current_process ->ppid];
+        }
+
+        //if no parent found, we've reached the root
+        if(parent_process == NULL){
+            root = current_process ->pid;
+            break;
+        } else {
+            // continue up the tree
+            index = parent_process ->pid;
+        }
+
+        // check if user differ, if so, security wall reach, stop here
+        if(current_process->uid != parent_process->uid){
+            root = current_process ->pid;
+            break;
+        }
+
+
+        // if parent is a shell and no curret, we have found the root app
+        if(is_shell(parent_process->name) && !is_shell(current_process->name)){
+            root = current_process ->pid;
+            break;
+        }
+
+        // continue up the tree
+        index = parent_process ->pid;
+    }
+
+    root_cache[pid] = root;
+    return root;
+
+}
+
+
+int initialize_root_cache_and_lookup(){
+    root_cache = malloc(sizeof(int) * current_max_pid);
+    if(root_cache == NULL){
+        perror("Failed to allocate memory for root cache");
+        return -1;
+    }
+
+    for(int i=0; i<current_max_pid; i++){
+        root_cache[i] = -1;
+    }
+
+    pid_lookup = malloc(sizeof(ProcessRaw*) * current_max_pid);
+    if(pid_lookup == NULL){
+        perror("Failed to allocate memory for PID lookup");
+        free(root_cache);
+        return -1;
+    }
+
+    for(int i=0; i<current_max_pid; i++){
+        pid_lookup[i] = NULL;
+    }
+
+    return 0;
+}
+
+
+void build_pid_lookup(ProcessRaw *process_list, int process_count){
+    for(int i=0; i<process_count; i++){
+        ProcessRaw *p = &process_list[i];
+        if(p->pid >0 && p->pid < current_max_pid){
+            pid_lookup[p->pid] = p;
+        }
+    }
+}
 
 
 
