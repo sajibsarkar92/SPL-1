@@ -244,4 +244,78 @@ void build_pid_lookup(ProcessInfo *process_list, int process_count){
 }
 
 
+int build_AppSummary_list(ProcessInfo *process_list, int process_count, AppSummary **summary_list) {
+    if (process_list == NULL || process_count <= 0) {
+        return -1;
+    }
+
+    int capacity = 128;
+    int count = 0;
+
+    AppSummary *temp_list = malloc(sizeof(AppSummary) * capacity);
+    if (temp_list == NULL) {
+        perror("Failed to allocate memory for AppSummary list");
+        return -1;
+    }
+
+    for (int i = 0; i < process_count; i++) {
+        ProcessInfo *p = &process_list[i];
+
+        int root_pid = get_app_root(p->pid);
+
+        if (root_pid <= 0) {
+            continue;
+        }
+
+        int index = -1;
+        // Check if root_pid already exists in summary list
+        for (int j = 0; j < count; j++) {
+            if (temp_list[j].root_pid == root_pid) {
+                index = j;
+                break;
+            }
+        }
+
+        // IF NEW APP FOUND
+        if (index == -1) {
+            // 1. Check if we need to resize
+            if (count >= capacity) {
+                capacity *= 2;
+                AppSummary *new_list = realloc(temp_list, sizeof(AppSummary) * capacity);
+                if (new_list == NULL) {
+                    perror("Failed to reallocate memory for AppSummary list");
+                    free(temp_list);
+                    return -1;
+                }
+                temp_list = new_list;
+            }
+
+            // 2. Set index and increment count (THIS MUST HAPPEN ALWAYS FOR NEW APPS)
+            index = count++;
+
+            // 3. Initialize the new entry
+            AppSummary *new_app = &temp_list[index];
+            new_app->root_pid = root_pid;
+            new_app->summed_pss_kb = 0;
+            new_app->summed_delta_p = 0;
+            new_app->total_processes = 0;
+
+            if (pid_lookup[root_pid] != NULL) {
+                strncpy(new_app->root_name, pid_lookup[root_pid]->name, sizeof(new_app->root_name) - 1);
+            } else {
+                snprintf(new_app->root_name, sizeof(new_app->root_name), "pid_%d", root_pid);
+            }
+            new_app->root_name[sizeof(new_app->root_name) - 1] = '\0';
+        }
+
+        // Accumulate data
+        temp_list[index].summed_pss_kb += p->pss_kb;
+        temp_list[index].summed_delta_p += p->delta_p;
+        temp_list[index].total_processes += 1;
+    }
+
+    *summary_list = temp_list;
+    return count;
+}
+
 
