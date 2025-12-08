@@ -34,6 +34,9 @@ typedef struct{
     unsigned long long summed_pss_kb;
     unsigned long long summed_delta_p;
     int total_processes;
+    double cpu_percentage;
+    double mem_percentage;
+
 } AppSummary;
 
 

@@ -14,12 +14,14 @@ static AppSummary *app_summaries = NULL;
 
 void get_system_pid_max() {
     FILE *f = fopen("/proc/sys/kernel/pid_max", "r");
-    int pid_max = 32768; // Default fallback
+    int pid_max = 32768; 
+
     if (f) {
         if (fscanf(f, "%d", &pid_max) != 1) pid_max = 32768;
         fclose(f);
     }
-    // Safety clamp for unexpected values
+
+    
     if (pid_max < 32768) pid_max = 32768; 
     current_max_pid = pid_max;
 
@@ -47,7 +49,7 @@ int load_raw_csv(char *filename, ProcessInfo **list_out){
         return -1;      
     }
 
-    // Skip header line
+
     fgets(line, sizeof(line), file);
 
     while(fgets(line,sizeof(line), file)){
@@ -77,7 +79,7 @@ int load_raw_csv(char *filename, ProcessInfo **list_out){
             &p->ppid, 
             &p->sid, 
             &p->uid, 
-            &jiffies_ignored, // The CSV has 'total_jiffies', but ProcessInfo has utime/stime
+            &jiffies_ignored,
             &p->utime, 
             &p->stime, 
             &p->starttime,
@@ -319,3 +321,115 @@ int build_AppSummary_list(ProcessInfo *process_list, int process_count, AppSumma
 }
 
 
+
+
+static void calculate_and_update_deltas(ProcessInfo *list1, int count1, ProcessInfo *list2, int count2) {
+    if (!list1 || !list2 || count1 <= 0 || count2 <= 0) return;
+
+    memset(pid_lookup, 0, sizeof(ProcessInfo*) * current_max_pid);
+    build_pid_lookup(list1, count1);
+
+    for (int i = 0; i < count2; i++) {
+        ProcessInfo *p2 = &list2[i];
+        p2->delta_p = 0; 
+
+        if (p2->pid <= 0 || p2->pid >= current_max_pid) continue;
+
+        ProcessInfo *p1 = pid_lookup[p2->pid];
+
+        if (p1 != NULL && p1->starttime == p2->starttime) {
+             unsigned long total_ticks_1 = p1->utime + p1->stime;
+             unsigned long total_ticks_2 = p2->utime + p2->stime;
+
+             if (total_ticks_2 >= total_ticks_1) {
+                 p2->delta_p = total_ticks_2 - total_ticks_1;
+             }
+        } else {
+            // New process during the interval, set delta_p to total jiffies
+            p2->delta_p = p2->utime + p2->stime;
+        }
+    }
+
+    memset(pid_lookup, 0, sizeof(ProcessInfo*) * current_max_pid);
+}
+
+
+int aggregate_live_data(ProcessInfo *prev_list, int prev_count, 
+                        ProcessInfo *curr_list, int curr_count, 
+                        unsigned long system_total_ticks,  // <--- NEW ARG
+                        unsigned long system_total_mem_kb, // <--- NEW ARG
+                        AppSummary **summary_out) {
+
+
+    if (root_cache == NULL || pid_lookup == NULL) {
+        get_system_pid_max();
+        if (initialize_root_cache_and_lookup() != 0) return -1;
+    }
+
+    
+    calculate_and_update_deltas(prev_list, prev_count, curr_list, curr_count);
+
+
+    if (pid_lookup){
+        memset(pid_lookup, 0, sizeof(ProcessInfo*) * current_max_pid);
+    } 
+
+
+    build_pid_lookup(curr_list, curr_count);
+
+
+    if (root_cache){
+        memset(root_cache, -1, sizeof(int) * current_max_pid);
+    } 
+
+
+    int app_count = build_AppSummary_list(curr_list, curr_count, summary_out);
+
+    
+    if (app_count > 0 && *summary_out != NULL) {
+        AppSummary *list = *summary_out;
+        
+        for (int i = 0; i < app_count; i++) {
+            if (system_total_ticks > 0) {
+                list[i].cpu_percentage = ((double)list[i].summed_delta_p / (double)system_total_ticks) * 100.0;
+            } else {
+                list[i].cpu_percentage = 0.0;
+            }
+
+            if (system_total_mem_kb > 0) {
+                list[i].mem_percentage = ((double)list[i].summed_pss_kb / (double)system_total_mem_kb) * 100.0;
+            } else {
+                list[i].mem_percentage = 0.0;
+            }
+        }
+    }
+
+    return app_count;
+}
+
+void print_aggregated_data_to_csv(AppSummary *list, int count) {
+    const char *filename = "aggregated_data.csv";
+    FILE *file = fopen(filename, "w");
+    
+    if (file == NULL) {
+        perror("Error opening aggregated_data.csv");
+        return;
+    }
+
+    fprintf(file, "Root_PID,App_Name,Process_Count,Total_PSS_KB,Total_CPU_Ticks,CPU_Percent,Mem_Percent\n");
+
+    for (int i = 0; i < count; i++) {
+        fprintf(file, "%d,\"%s\",%d,%llu,%llu,%.2f,%.2f\n",
+            list[i].root_pid,
+            list[i].root_name,
+            list[i].total_processes,
+            list[i].summed_pss_kb,
+            list[i].summed_delta_p,
+            list[i].cpu_percentage,    // <--- Printed!
+            list[i].mem_percentage     // <--- Printed!
+        );
+    }
+
+    fclose(file);
+    printf("✅ Aggregated data (with percentages) written to %s.\n", filename);
+}
