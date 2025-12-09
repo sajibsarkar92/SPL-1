@@ -101,5 +101,12 @@ void freeHashMap(void);
 
 /* Utilities */
 void free_process_list(ProcessInfo *list);
+int aggregate_live_data(ProcessInfo *prev_list, int prev_count, 
+                        ProcessInfo *curr_list, int curr_count, 
+                        unsigned long system_total_ticks, 
+                        unsigned long system_total_mem_kb, 
+                        AppSummary **summary_out);
+
+void print_aggregated_data_to_csv(AppSummary *list, int count);
 
 #endif /* DATA_COLLECTOR_H */

@@ -370,11 +370,6 @@ int aggregate_live_data(ProcessInfo *prev_list, int prev_count,
     calculate_and_update_deltas(prev_list, prev_count, curr_list, curr_count);
 
 
-    if (pid_lookup){
-        memset(pid_lookup, 0, sizeof(ProcessInfo*) * current_max_pid);
-    } 
-
-
     build_pid_lookup(curr_list, curr_count);
 
 
