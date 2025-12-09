@@ -428,3 +428,46 @@ void print_aggregated_data_to_csv(AppSummary *list, int count) {
     fclose(file);
     printf("✅ Aggregated data (with percentages) written to %s.\n", filename);
 }
+
+
+
+int export_aggregated_snapshot(void) {
+    ProcessInfo *proc_list = NULL;
+    int count = 0;
+
+    count = load_raw_csv("raw_data.csv", &proc_list);
+
+    if (count < 0) {
+        fprintf(stderr, "❌ Failed to load raw_data.csv. Run Option 2 first!\n");
+        return 1;
+    }
+
+    get_system_pid_max();
+    if (initialize_root_cache_and_lookup() != 0) {
+        free(proc_list);
+        return 1;
+    }
+
+
+    build_pid_lookup(proc_list, count);
+    
+   
+    if (root_cache) {
+         for(int i=0; i<current_max_pid; i++) root_cache[i] = -1;
+    }
+
+    AppSummary *summary_list = NULL;
+    int app_count = build_AppSummary_list(proc_list, count, &summary_list);
+
+    
+    if (app_count > 0) {
+        printf("✅ Aggregated into %d unique applications.\n", app_count);
+        print_aggregated_data_to_csv(summary_list, app_count);
+        free(summary_list);
+    } else {
+        printf("⚠️ No applications identified.\n");
+    }
+
+    free(proc_list);
+    return 0;
+}

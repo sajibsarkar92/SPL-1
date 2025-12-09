@@ -11,5 +11,5 @@ int raw_data_to_csv(void);
 /* new: aggregate raw CSV into aggregate.csv */
 int aggregate_raw_to_csv(void);
 pthread_t start_background_monitoring(int interval);
-
+pthread_t start_raw_data_updater(int interval);
 #endif

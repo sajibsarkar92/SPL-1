@@ -415,9 +415,35 @@ int write_system_info(SystemCpuInfo sys_info){
     
 }
 
-/* Free a process list previously returned by extract_processes */
 void free_process_list(ProcessInfo *list) {
     if (list != NULL) {
         free(list);
+    }
+}
+
+
+int export_raw_snapshot(void) {
+    ProcessInfo *proc_list = NULL;
+    SystemCpuInfo sys_totals;
+    int count;
+
+    count = extract_processes(&proc_list, &sys_totals);
+
+    if (count > 0) {
+        
+        print_raw_data_to_csv(proc_list, count);
+        write_system_info(sys_totals);
+
+        
+        free_process_list(proc_list);
+        return 0;
+    } else if (count == 0) {
+        
+        free_process_list(proc_list);
+        return 0; 
+    } else {
+        
+        free_process_list(proc_list);
+        return 1;
     }
 }

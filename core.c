@@ -7,6 +7,44 @@
 
 pthread_mutex_t file_access_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+
+// 1. The Thread Function
+void *raw_updater_thread_func(void *arg) {
+    int interval = *((int *)arg);
+    free(arg); // Clean up the malloc'd integer
+
+    printf("🔄 Background Raw Data Updater started (Interval: %ds)...\n", interval);
+
+    while (1) {
+        // reuse your existing thread-safe function!
+        // It handles extraction, printing, and cleanup internally.
+        raw_data_to_csv(); 
+        
+        sleep(interval);
+    }
+    return NULL;
+}
+
+// 2. The Launcher Function
+pthread_t start_raw_data_updater(int interval) {
+    pthread_t thread_id;
+    int *arg = malloc(sizeof(int));
+    if (!arg) {
+        perror("Failed to allocate memory for thread arg");
+        return 0;
+    }
+    *arg = interval;
+
+    if (pthread_create(&thread_id, NULL, raw_updater_thread_func, arg) != 0) {
+        perror("Failed to create raw data updater thread");
+        free(arg);
+        return 0;
+    }
+
+    return thread_id;
+}
+
 void * monitor_thread  (void *arg) {
     int interval = *((int *)arg);
     while (1) {
@@ -18,34 +56,29 @@ void * monitor_thread  (void *arg) {
 
 
 int raw_data_to_csv(void) {
-	ProcessInfo *proc_list = NULL;
-	SystemCpuInfo sys_totals;
-	int count;
+    
+    pthread_mutex_lock(&file_access_mutex);
 
-	printf("🚀 Starting raw data extraction...\n");
+    
+    int result = export_raw_snapshot();
 
-	count = extract_processes(&proc_list, &sys_totals);
+    pthread_mutex_unlock(&file_access_mutex);
 
-	if (count > 0) {
-
-        pthread_mutex_lock(&file_access_mutex);
-		printf("✅ Successfully extracted %d processes.\n", count);
-		print_raw_data_to_csv(proc_list, count);
-		write_system_info(sys_totals);
-        pthread_mutex_unlock(&file_access_mutex);
-
-		free(proc_list);
-		return 0;
-	} else if (count == 0) {
-		printf("⚠️ No processes found.\n");
-		free(proc_list);
-		return 0; // not an error
-	} else {
-		fprintf(stderr, "❌ Extraction failed.\n");
-		free(proc_list);
-		return 1;
-	}
+    return result;
 }
+
+int aggregate_raw_to_csv(void) {
+    
+    pthread_mutex_lock(&file_access_mutex);
+
+    
+    int result = export_aggregated_snapshot();
+
+    pthread_mutex_unlock(&file_access_mutex);
+
+    return result;
+}
+
 
 int run_process_monitor(int interval) {
     ProcessInfo *proc_list1 = NULL;

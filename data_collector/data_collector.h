@@ -108,5 +108,6 @@ int aggregate_live_data(ProcessInfo *prev_list, int prev_count,
                         AppSummary **summary_out);
 
 void print_aggregated_data_to_csv(AppSummary *list, int count);
-
+int export_raw_snapshot(void);
+int export_aggregated_snapshot(void);
 #endif /* DATA_COLLECTOR_H */
