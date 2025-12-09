@@ -261,6 +261,45 @@ void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count) {
 
 
 
+int monitor_individual_processes_cycle(int interval) {
+    ProcessInfo *proc_list1 = NULL;
+    ProcessInfo *proc_list2 = NULL;
+    SystemCpuInfo sys_info1;
+    SystemCpuInfo sys_info2;
+    int count1 = 0, count2 = 0;
 
+    // 1. Snapshot T0
+    count1 = extract_processes(&proc_list1, &sys_info1);
 
+    // 2. Wait
+    sleep(interval);
+
+    // 3. Snapshot T1
+    count2 = extract_processes(&proc_list2, &sys_info2);
+
+    // 4. Calculate Difference
+    if (count1 > 0 && count2 > 0) {
+        int final_count = 0;
+        ProcessResourceInfo *resource_list = calculate_individual_resources(
+            proc_list1, count1, sys_info1,
+            proc_list2, count2, sys_info2,
+            &final_count
+        );
+
+        if (resource_list != NULL && final_count > 0) {
+            print_cal_processes_to_csv(resource_list, final_count);
+            free(resource_list);
+        } else {
+            fprintf(stderr, "⚠️ Warning: No individual process stats calculated.\n");
+        }
+    } else {
+        fprintf(stderr, "❌ Error: Snapshot capture failed.\n");
+    }
+
+    // 5. Cleanup
+    free_process_list(proc_list1);
+    free_process_list(proc_list2);
+
+    return 0;
+}
 

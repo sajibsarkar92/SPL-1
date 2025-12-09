@@ -91,6 +91,8 @@ unsigned long hashKey(int pid, long starttime);
 
 
 
+int monitor_individual_processes_cycle(int interval);
+
 ProcessResourceInfo* calculate_individual_resources(
     ProcessInfo *list1, int count1, SystemCpuInfo sys_info1,
     ProcessInfo *list2, int count2, SystemCpuInfo sys_info2,
