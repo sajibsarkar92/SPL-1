@@ -98,15 +98,26 @@ ProcessResourceInfo* calculate_individual_resources(
     ProcessInfo *list2, int count2, SystemCpuInfo sys_info2,
     int *final_count_ptr
 );
+
+
+int aggregate_live_data(ProcessInfo *prev_list, int prev_count, 
+                        ProcessInfo *curr_list, int curr_count, 
+                        SystemCpuInfo *prev_sys, 
+                        SystemCpuInfo *curr_sys, 
+                        AppSummary **summary_out);
+
+
 void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count);
 void freeHashMap(void);
 
 /* Utilities */
 void free_process_list(ProcessInfo *list);
-int aggregate_live_data(ProcessInfo *prev_list, int prev_count, 
-                        ProcessInfo *curr_list, int curr_count, 
-                        unsigned long system_total_ticks, 
-                        unsigned long system_total_mem_kb, 
+int aggregate_live_data(ProcessInfo *prev_list,
+                        int prev_count, 
+                        ProcessInfo *curr_list, 
+                        int curr_count, 
+                        SystemCpuInfo *prev_sys, 
+                        SystemCpuInfo *curr_sys,
                         AppSummary **summary_out);
 
 void print_aggregated_data_to_csv(AppSummary *list, int count);

@@ -9,128 +9,66 @@ pthread_mutex_t file_access_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 
-// 1. The Thread Function
-void *raw_updater_thread_func(void *arg) {
+// 1. The Unified Monitoring Thread Function
+
+
+void *unified_monitor_thread_func(void *arg) {
     int interval = *((int *)arg);
-    free(arg); // Clean up the malloc'd integer
-
-    printf("🔄 Background Raw Data Updater started (Interval: %ds)...\n", interval);
-
-    while (1) {
-        // reuse your existing thread-safe function!
-        // It handles extraction, printing, and cleanup internally.
-        raw_data_to_csv(); 
-        
-        sleep(interval);
-    }
-    return NULL;
-}
-
-void *individual_process_monitor_thread_func(void *arg) {
-    int interval = *((int *)arg);
-    free(arg); 
-    
-    printf("👀 Individual Process Monitor Thread started (Interval: %ds)...\n", interval);
-    
-    while (1) {
-        // Calls the logic in resource_calculator.c
-        monitor_individual_processes_cycle(interval);
-    }
-    return NULL;
-}
-
-void *aggregator_thread_func(void *arg){
-    int interval = *(int*) arg;
     free(arg);
 
-    while(1){
-        aggregate_raw_to_csv();
+    ProcessInfo *old_list = NULL;
+    SystemCpuInfo old_sys;
+    int old_count = extract_processes(&old_list, &old_sys); // Initial Snap A
 
-        sleep(interval);
+    while (1) {
+        sleep(interval); // Wait for the window
+
+        ProcessInfo *new_list = NULL;
+        SystemCpuInfo new_sys;
+        int new_count = extract_processes(&new_list, &new_sys); // Snap B
+
+        pthread_mutex_lock(&file_access_mutex);
+        
+        // 1. Update Raw Data (using Snap B)
+        print_raw_data_to_csv(new_list, new_count);
+        write_system_info(new_sys);
+
+        // 2. Update Resource Data (Compare A and B)
+        int res_count = 0;
+        ProcessResourceInfo *res_list = calculate_individual_resources(
+            old_list, old_count, old_sys, new_list, new_count, new_sys, &res_count);
+        if (res_list) { print_cal_processes_to_csv(res_list, res_count); free(res_list); }
+
+        // 3. Update Aggregator Data (Compare A and B)
+        AppSummary *summary_list = NULL;
+        int app_count = aggregate_live_data(old_list, old_count, new_list, new_count, &old_sys, &new_sys, &summary_list);
+        if (summary_list) { print_aggregated_data_to_csv(summary_list, app_count); free(summary_list); }
+
+        pthread_mutex_unlock(&file_access_mutex);
+
+        // SLIDING WINDOW: B becomes A for next time
+        free_process_list(old_list);
+        old_list = new_list;
+        old_sys = new_sys;
+        old_count = new_count;
     }
+    return NULL;
 }
 
-// 2. The Launcher Function
-pthread_t start_raw_data_updater(int interval) {
+// launcher for the unified monitoring thread
+
+pthread_t start_unified_monitoring(int interval) {
     pthread_t thread_id;
     int *arg = malloc(sizeof(int));
-    if (!arg) {
-        perror("Failed to allocate memory for thread arg");
-        return 0;
-    }
+    if (!arg) return 0;
     *arg = interval;
 
-    if (pthread_create(&thread_id, NULL, raw_updater_thread_func, arg) != 0) {
-        perror("Failed to create raw data updater thread");
+    if (pthread_create(&thread_id, NULL, unified_monitor_thread_func, arg) != 0) {
+        perror("Failed to create unified monitor thread");
         free(arg);
         return 0;
     }
-
     return thread_id;
 }
-
-pthread_t start_individual_process_monitoring(int interval) {
-    pthread_t thread_id;
-    int *arg = malloc(sizeof(int));
-    if (!arg) {
-        perror("Failed to allocate memory for thread arg");
-        return 0;
-    }
-    *arg = interval;
-
-    if (pthread_create(&thread_id, NULL, individual_process_monitor_thread_func, arg) != 0) {
-        perror("Failed to create individual process monitor thread");
-        free(arg);
-        return 0;
-    }
-
-    return thread_id;
-}
-
-pthread_t start_bg_aggregation(int interval){
-    pthread_t thread_id;
-    int *arg = malloc (sizeof(int));
-
-    if(!arg){
-        perror("Failed to allocate memory for thread arg");
-        return 0;
-    }
-    *arg = interval;
-
-    if(pthread_create(&thread_id, NULL, aggregator_thread_func, arg) !=0){
-        perror("Failed to create aggregator thread");
-        free(arg);
-        return 0;
-    }
-
-    return thread_id;
-}
-
-
-
-int raw_data_to_csv(void) {
-    
-    pthread_mutex_lock(&file_access_mutex);
-
-    
-    int result = export_raw_snapshot();
-
-    pthread_mutex_unlock(&file_access_mutex);
-
-    return result;
-}
-
-int aggregate_raw_to_csv(void) {
-    
-    pthread_mutex_lock(&file_access_mutex);
-
-    
-    int result = export_aggregated_snapshot();
-
-    pthread_mutex_unlock(&file_access_mutex);
-
-    return result; 
-}
-
 
 

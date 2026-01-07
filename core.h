@@ -12,7 +12,5 @@ extern int monitoring_interval;
 int aggregate_raw_to_csv(void);
 int raw_data_to_csv(void);
 
-pthread_t start_raw_data_updater(int interval);
-pthread_t start_individual_process_monitoring(int interval);
-pthread_t start_bg_aggregation(int interval);
+pthread_t start_unified_monitoring(int interval);
 #endif

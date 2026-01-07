@@ -1,4 +1,4 @@
-// calculate the ram, uptime, cpu usage from the data. Application wise  and save it in resource.csv file
+
 #include "data_collector.h"
 #include <stdlib.h>
 #include <unistd.h>

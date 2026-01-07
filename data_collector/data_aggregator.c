@@ -223,11 +223,11 @@ static void calculate_and_update_deltas(ProcessInfo *list1, int count1, ProcessI
              }
         } else {
             // New process during the interval
-            p2->delta_p = p2->utime + p2->stime;
+            p2->delta_p = 0;
         }
     }
 
-    // Clean up lookup
+    // Clear lookup after use
     memset(pid_lookup, 0, sizeof(ProcessInfo*) * current_max_pid);
 }
 
@@ -258,11 +258,7 @@ void print_aggregated_data_to_csv(AppSummary *list, int count) {
     printf("✅ Aggregated data written to %s.\n", filename);
 }
 
-// --- MAIN AGGREGATION LOGIC ---
 
-/* * Calculates Deltas and Percentages based on two SystemCpuInfo snapshots.
- * Returns the count of aggregated applications.
- */
 int aggregate_live_data(ProcessInfo *prev_list, int prev_count, 
                         ProcessInfo *curr_list, int curr_count, 
                         SystemCpuInfo *prev_sys, 
@@ -291,8 +287,7 @@ int aggregate_live_data(ProcessInfo *prev_list, int prev_count,
     // 3. Calculate Process Deltas (Numerator)
     calculate_and_update_deltas(prev_list, prev_count, curr_list, curr_count);
 
-    // 4. Build App List (Group by Root PID)
-    // Clear lookup for current list build
+
     build_pid_lookup(curr_list, curr_count);
     
     if (root_cache){
@@ -325,11 +320,7 @@ int aggregate_live_data(ProcessInfo *prev_list, int prev_count,
     return app_count;
 }
 
-// --- PUBLIC API FOR UNIFIED THREAD ---
 
-/* * Called by core.c (Unified Thread). 
- * Accepts raw snapshots, performs aggregation, and prints to CSV.
- */
 void update_aggregated_data_csv(ProcessInfo *prev_list, int prev_count, 
                                 ProcessInfo *curr_list, int curr_count,
                                 SystemCpuInfo *prev_sys, SystemCpuInfo *curr_sys) {

@@ -260,34 +260,30 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     struct dirent *entry;
     size_t count = 0;
 
-    // if (read_cpu_info(system_info) != 0) {
-    //     // upon failure, exit here
-    //     return -1;
-    // }
-    if(read_system_uptime(system_info) != 0){
-        // same here
+    if (read_system_uptime(system_info) != 0)
+     return -1;
+
+    if (read_total_system_memory(system_info) != 0)
+     return -1;
+
+    
+    size_t capacity = 128; 
+    ProcessInfo *temp_list = (ProcessInfo *)calloc(capacity, sizeof(ProcessInfo));
+    
+    if (temp_list == NULL) {
+        perror("Failed to allocate initial memory for process list");
         return -1;
     }
 
-    
-
-    if(read_total_system_memory(system_info) != 0) {
-        return -1;
-    }
-    
-    // realloc to allocate, and use temporary pointer to avoid leaks on failure
-    ProcessInfo *temp_list = NULL;
-    size_t capacity = 0; // current allocated capacity
-
-    // 1. Opening /proc
+    // 3. Open /proc
     if ((dir = opendir("/proc")) == NULL) {
         perror("Error opening /proc");
+        free(temp_list); 
         return -1;
     }
 
-    // 2. Iterate through all entries in /proc
+    
     while ((entry = readdir(dir)) != NULL) {
-        // check if the folder is numeric
         int is_pid = 1;
         for (char *c = entry->d_name; *c; c++) {
             if (!isdigit(*c)) {
@@ -298,38 +294,34 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
         
         if (is_pid) {
             pid_t pid = (pid_t)atoi(entry->d_name);
+            if (pid <= 0) continue;
 
-            // making sure we have enough space
-            if ((count + 1) > capacity) {
-                size_t new_capacity;
-                if (capacity == 0) {
-                    new_capacity = 64; // initial capacity
-                } else {
-                    new_capacity = capacity * 2; // double the capacity, like vector
-                }
-
-
-                if ((count + 1) > new_capacity) {
-                    new_capacity = (size_t)(count + 1);
-                }
-
-                /* Use temporary pointer to avoid losing temp_list on failure. */
+            // 5. Dynamic Resizing (Vector Logic)
+            if (count >= capacity) {
+                size_t new_capacity = capacity * 2;
                 ProcessInfo *tmp = realloc(temp_list, new_capacity * sizeof(ProcessInfo));
+                
                 if (tmp == NULL) {
-                    // upon failure, skip this PID but keep existing data
-                    continue;
+                    // On failure, we stop extracting but keep what we have so far
+                    fprintf(stderr, "Warning: Memory allocation failed during extraction. List truncated.\n");
+                    break; 
                 }
-                // Success, update pointer and capacity
+                
                 temp_list = tmp;
-                //update capacity
+
+               
+                memset(temp_list + capacity, 0, (new_capacity - capacity) * sizeof(ProcessInfo));
+
                 capacity = new_capacity;
             }
 
-            // Fill in the ProcessInfo structure
+
             ProcessInfo *current_info = &temp_list[count];
+            memset(current_info, 0, sizeof(ProcessInfo)); 
+
             current_info->pid = pid;
 
-            // helper functins to read data from various /proc files
+
             if (read_proc_stat(pid, current_info) == 0 &&
                 read_proc_status(pid, current_info) == 0 &&
                 read_proc_pss(pid, current_info) == 0 &&
@@ -337,8 +329,8 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
             {
                 count++;
             } else {
-                // on failure, skip this process but keep existing data
-                continue;
+               
+                memset(current_info, 0, sizeof(ProcessInfo));
             }
         }
     }
@@ -346,20 +338,13 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
     closedir(dir);
     
     *list = temp_list;
-    return count;
+    return (int)count;
 }
 
 #define CSV_FILENAME "raw_data.csv"
 
 
-/*
 
-    temporary function to print raw data to csv file for testing
-
-*/
-
-
-// data_extractor.c: print_raw_data_to_csv
 
 
 void print_raw_data_to_csv(ProcessInfo *list, int count) {
@@ -397,7 +382,7 @@ void print_raw_data_to_csv(ProcessInfo *list, int count) {
 
 
 
-// Updated function to include SystemCpuInfo
+
 int write_system_info(SystemCpuInfo sys_info){
     FILE *file = fopen("system_info.txt", "w");
 
