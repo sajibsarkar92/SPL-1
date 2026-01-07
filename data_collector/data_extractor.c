@@ -376,7 +376,7 @@ void print_raw_data_to_csv(ProcessInfo *list, int count) {
     }
 
     fclose(file);
-    printf(" Raw data written to %s successfully.\n", CSV_FILENAME);
+//     printf(" Raw data written to %s successfully.\n", CSV_FILENAME);
 }
 
 

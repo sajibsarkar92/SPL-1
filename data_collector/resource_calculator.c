@@ -255,7 +255,7 @@ void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count) {
     }
 
     fclose(file);
-    printf("✅ Individual process data written to %s.\n", filename);
+    // printf("✅ Individual process data written to %s.\n", filename);
 }
 
 

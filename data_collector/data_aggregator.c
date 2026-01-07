@@ -255,7 +255,7 @@ void print_aggregated_data_to_csv(AppSummary *list, int count) {
     }
 
     fclose(file);
-    printf("✅ Aggregated data written to %s.\n", filename);
+    // printf("✅ Aggregated data written to %s.\n", filename);
 }
 
 
