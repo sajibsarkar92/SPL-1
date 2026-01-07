@@ -15,7 +15,7 @@ void display_main_menu() {
     printf("Enter choice: ");
 }
 
-void run_interactive_mode() {
+void run_interactive_menu() {
     int choice;
     int target_pid;
 
@@ -52,7 +52,7 @@ void run_interactive_mode() {
                     terminate_process(target_pid); 
                     break;
                 case 4: 
-                    kill_process(target_pid); 
+                    force_kill(target_pid); 
                     break;
                 case 5: {
                     int prio_choice;
