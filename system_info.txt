@@ -1,0 +1,3 @@
+Uptime (seconds): 770.390000
+Ticks per second: 100
+Total Memory (KB): 7758412
