@@ -1,6 +1,7 @@
 // core.c — program controller
 
 #include "core.h"
+#include "cluster/clustering.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -42,7 +43,11 @@ void *unified_monitor_thread_func(void *arg) {
         // 3. Update Aggregator Data (Compare A and B)
         AppSummary *summary_list = NULL;
         int app_count = aggregate_live_data(old_list, old_count, new_list, new_count, &old_sys, &new_sys, &summary_list);
-        if (summary_list) { print_aggregated_data_to_csv(summary_list, app_count); free(summary_list); }
+        if (summary_list) { 
+            print_aggregated_data_to_csv(summary_list, app_count); 
+            perform_clustering_and_export(summary_list, app_count);
+            free(summary_list); 
+        }
 
         pthread_mutex_unlock(&file_access_mutex);
 
