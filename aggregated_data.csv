@@ -1,14 +1,14 @@
 Root_PID,App_Name,Process_Count,Total_PSS_KB,Total_CPU_Ticks,CPU_Percent,Mem_Percent
-1,"systemd",48,185898,2,0.48,2.40
-778,"systemd-resolved",1,5210,0,0.00,0.07
+1,"systemd",48,186341,0,0.00,2.40
+778,"systemd-resolved",1,5211,0,0.00,0.07
 829,"dbus-broker-launch",2,5883,0,0.00,0.08
-837,"avahi-daemon: running [fedora.local]",2,1253,0,0.00,0.02
+837,"avahi-daemon: running [fedora.local]",2,1321,1,0.24,0.02
 843,"chronyd",1,1449,0,0.00,0.02
-849,"polkitd",1,6559,0,0.00,0.08
+849,"polkitd",1,6558,0,0.00,0.08
 850,"rtkit-daemon",1,333,0,0.00,0.00
 1105,"dbus",1,1724,0,0.00,0.02
-1315,"colord",1,4121,0,0.00,0.05
-2603,"systemd",79,2225045,76,18.23,28.70
+1315,"colord",1,4119,0,0.00,0.05
+2603,"systemd",80,2287848,77,18.51,29.51
 2726,"gdm-wayland-session",2,1707,0,0.00,0.02
-16114,"sudo",2,3623,0,0.00,0.05
-16161,"my_monitor",1,50327,15,3.60,0.65
+17893,"sudo",2,3645,0,0.00,0.05
+17940,"my_monitor",1,50330,17,4.09,0.65
