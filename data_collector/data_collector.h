@@ -109,7 +109,8 @@ int aggregate_live_data(ProcessInfo *prev_list, int prev_count,
 
 void print_cal_processes_to_csv(const ProcessResourceInfo *list, int count);
 void freeHashMap(void);
-
+// data_collector.h
+void perform_clustering_and_print_csv(ProcessResourceInfo *list, int count);
 /* Utilities */
 void free_process_list(ProcessInfo *list);
 int aggregate_live_data(ProcessInfo *prev_list,

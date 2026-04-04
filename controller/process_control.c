@@ -1,57 +1,43 @@
-#include<signal.h>
+#include <signal.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/resource.h>
-
+#include "process_control.h"
 
 void suspend_process(int pid) {
-    if(kill(pid, SIGSTOP) == 0){
-        printf("Suspended process %d\n", pid);
-    } else {
-        perror("Failed to suspend process");
+    if (kill(pid, SIGSTOP) != 0) {
+        // Use stderr to avoid UI corruption; redirect to log file if needed
+        fprintf(stderr, "Error: Failed to suspend process %d\n", pid);
     }
 }
 
-void resume_process(int pid){
-    if(kill(pid, SIGCONT) == 0){
-        printf("Resumed process %d\n", pid);
-    } else {
-        perror("Failed to resume process");
+void resume_process(int pid) {
+    if (kill(pid, SIGCONT) != 0) {
+        fprintf(stderr, "Error: Failed to resume process %d\n", pid);
     }
 }
 
-void terminate_process(int pid){
-    if(kill(-pid, SIGTERM) == 0){
-        printf("Killed to process group of %d\n", pid);
-    } else if( kill(pid, SIGTERM) ==0){
-        printf("Killed process %d\n", pid);
-    } else {
-        perror("Failed to terminate process");
-    }
-}
-
-void force_kill(int pid){
-    if(kill(-pid, SIGKILL) == 0){
-        printf("Force killed process group of %d\n", pid);
-    } else if( kill(pid, SIGKILL) ==0){
-        printf("Force killed process %d\n", pid);
-    } else {
-        perror("Failed to force kill process");
-    }
-}
-// sudo for high priority
-void renice_process(int pid, int new_priority){
-    if(setpriority(PRIO_PROCESS, pid, new_priority) == 0){
-        printf("Reniced process %d to priority %d\n", pid, new_priority);
-        
-        if(new_priority < 0){
-            printf("HIgher priority assigned. Requires appropriate permissions.\n");
-        } else if(new_priority > 0){
-            printf("Lower priority assigned.\n");
-        } else {
-            printf("Normal priority assigned.\n");
+void terminate_process(int pid) {
+    // Attempt to kill process group first, then individual PID
+    if (kill(-pid, SIGTERM) != 0) {
+        if (kill(pid, SIGTERM) != 0) {
+            fprintf(stderr, "Error: Failed to terminate process %d\n", pid);
         }
-    } else {
-        perror("Failed to renice process");
+    }
+}
+
+void force_kill(int pid) {
+    // Attempt SIGKILL on process group first, then individual PID
+    if (kill(-pid, SIGKILL) != 0) {
+        if (kill(pid, SIGKILL) != 0) {
+            fprintf(stderr, "Error: Failed to force kill process %d\n", pid);
+        }
+    }
+}
+
+// Note: Increasing priority (negative nice values) requires sudo/root privileges
+void renice_process(int pid, int new_priority) {
+    if (setpriority(PRIO_PROCESS, pid, new_priority) != 0) {
+        fprintf(stderr, "Error: Failed to renice process %d to %d\n", pid, new_priority);
     }
 }

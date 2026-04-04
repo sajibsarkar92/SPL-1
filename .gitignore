@@ -1,0 +1,10 @@
+# Ignore compiled binaries
+pulse
+
+# Ignore data files 
+*.csv
+*.txt
+
+# Ignore markdown files except README.md
+*.md
+!README.md

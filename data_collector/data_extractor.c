@@ -303,7 +303,7 @@ int extract_processes(ProcessInfo **list, SystemCpuInfo *system_info) {
                 
                 if (tmp == NULL) {
                     // On failure, we stop extracting but keep what we have so far
-                    fprintf(stderr, "Warning: Memory allocation failed during extraction. List truncated.\n");
+                    // fprintf(stderr, "Warning: Memory allocation failed during extraction. List truncated.\n");
                     break; 
                 }
                 

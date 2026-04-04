@@ -7,7 +7,6 @@
 #define K_CLUSTERS 3
 #define MAX_ITERATIONS 10
 
-// Helper: Normalize values so CPU (0-100) and Mem (0-100) are treated equally
 double calculate_distance(AppSummary *a, AppSummary *b) {
     double cpu_diff = a->cpu_percentage - b->cpu_percentage;
     double mem_diff = a->mem_percentage - b->mem_percentage;
@@ -22,6 +21,9 @@ void perform_clustering_and_export(AppSummary *apps, int count) {
     int *assignments = malloc(sizeof(int) * count);
     
     // 2. K-Medoids Algorithm Loop
+
+
+    //this is another change
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
         int changed = 0;
 
@@ -80,12 +82,12 @@ void perform_clustering_and_export(AppSummary *apps, int count) {
         else labels[k] = "LOW_IMPACT";
     }
 
-    // 4. PIPELINE OUTPUT: Write to NEW CSV
+    
     FILE *fp = fopen("clustered_report.csv", "w");
     if (fp) {
         fprintf(fp, "Cluster_Label,App_Name,PID,CPU_Percent,Mem_Percent\n");
         
-        // Write grouped data
+       
         for (int k = 0; k < K_CLUSTERS; k++) {
             for (int i = 0; i < count; i++) {
                 if (assignments[i] == k) {

@@ -169,8 +169,7 @@ ProcessResourceInfo* calculate_individual_resources(
              }
 
             ProcessResourceInfo *res = &final_list[calculated_count];
-            /* defensive: ensure clean start (calloc already zeroed, but keep this for clarity) */
-            // memset(res, 0, sizeof(*res));
+            
 
             unsigned long total_proc_jiffies1 = proc1->utime + proc1->stime ;
             unsigned long total_proc_jiffies2 = proc2->utime + proc2->stime ;
@@ -290,10 +289,10 @@ int monitor_individual_processes_cycle(int interval) {
             print_cal_processes_to_csv(resource_list, final_count);
             free(resource_list);
         } else {
-            fprintf(stderr, "⚠️ Warning: No individual process stats calculated.\n");
+            // fprintf(stderr, "⚠️ Warning: No individual process stats calculated.\n");
         }
     } else {
-        fprintf(stderr, "❌ Error: Snapshot capture failed.\n");
+        // fprintf(stderr, "❌ Error: Snapshot capture failed.\n");
     }
 
     // 5. Cleanup
