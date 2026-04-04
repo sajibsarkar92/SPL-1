@@ -1,10 +1,14 @@
 # Ignore compiled binaries
 pulse
+my_m1
+my_monitor
+my_program
+_codeql_detected_source_root
 
 # Ignore data files 
 *.csv
 *.txt
-
+.directory
 # Ignore markdown files except README.md
 *.md
 !README.md
