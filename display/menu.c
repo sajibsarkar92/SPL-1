@@ -1,9 +1,3 @@
-/*
- * menu.c — PULSE Dashboard
- *
- * Centered, htop-inspired ncurses UI.
- * Uses ACS box-drawing characters (no UTF-8 dependency).
- */
 
 #include <ncurses.h>
 #include <stdlib.h>
@@ -14,73 +8,84 @@
 #include "menu.h"
 #include "../controller/process_control.h"
 
-/* ── constants ── */
+// constants
 
-#define MAX_ROWS     128
-#define NAME_CAP     45
-#define BAR_WIDTH    20
-#define REFRESH_MS   1000
+#define MAX_ROWS 128
+#define NAME_CAP 45
+#define BAR_WIDTH 20
+#define REFRESH_MS 1000
 
-/* fixed column content widths */
-#define COL_PID      7
-#define COL_CPU      7
-#define COL_MEM      7
-#define COL_STATUS   8
+// fixed width
+#define COL_PID 7
+#define COL_CPU 7
+#define COL_MEM 7
+#define COL_STATUS 8
 
-/* color pair IDs */
-#define CP_HIGH      1
-#define CP_MED       2
-#define CP_LOW       3
-#define CP_BAR       4
+// color id
+#define CP_HIGH 1
+#define CP_MED 2
+#define CP_LOW 3
+#define CP_BAR 4
 
-/* ── data types ── */
-
-typedef struct {
-    char   label[16];
-    char   name[64];
-    int    pid;
+typedef struct
+{
+    char label[16];
+    char name[64];
+    int pid;
     double cpu;
     double mem;
 } Row;
 
-/* ── data loading ── */
+// load from csv
 
-static int load_rows(Row *rows, int cap) {
+int load_rows(Row *rows, int cap)
+{
     FILE *fp = fopen("clustered_report.csv", "r");
-    if (!fp) return 0;
+    if (!fp)
+        return 0;
 
     char line[512];
-    if (!fgets(line, sizeof(line), fp)) { fclose(fp); return 0; }
+    if (!fgets(line, sizeof(line), fp))
+    {
+        fclose(fp);
+        return 0;
+    }
 
     int n = 0;
-    while (n < cap && fgets(line, sizeof(line), fp)) {
-        char *label   = strtok(line, ",");
-        char *name    = strtok(NULL, ",");
+    while (n < cap && fgets(line, sizeof(line), fp))
+    {
+        char *label = strtok(line, ",");
+        char *name = strtok(NULL, ",");
         char *pid_str = strtok(NULL, ",");
         char *cpu_str = strtok(NULL, ",");
         char *mem_str = strtok(NULL, ",\n");
-        if (!label || !name || !pid_str || !cpu_str || !mem_str) continue;
+        if (!label || !name || !pid_str || !cpu_str || !mem_str)
+            continue;
 
         strncpy(rows[n].label, label, sizeof(rows[n].label) - 1);
         rows[n].label[sizeof(rows[n].label) - 1] = '\0';
-        strncpy(rows[n].name,  name,  sizeof(rows[n].name)  - 1);
+        strncpy(rows[n].name, name, sizeof(rows[n].name) - 1);
         rows[n].name[sizeof(rows[n].name) - 1] = '\0';
         rows[n].pid = atoi(pid_str);
         rows[n].cpu = atof(cpu_str);
         rows[n].mem = atof(mem_str);
+
         n++;
     }
     fclose(fp);
     return n;
 }
 
-static int load_sysinfo(double *uptime_sec, unsigned long *total_mem_kb) {
-    *uptime_sec   = 0;
+int load_sysinfo(double *uptime_sec, unsigned long *total_mem_kb)
+{
+    *uptime_sec = 0;
     *total_mem_kb = 0;
     FILE *fp = fopen("system_info.txt", "r");
-    if (!fp) return -1;
+    if (!fp)
+        return -1;
     char line[128];
-    while (fgets(line, sizeof(line), fp)) {
+    while (fgets(line, sizeof(line), fp))
+    {
         sscanf(line, "Uptime (seconds): %lf", uptime_sec);
         sscanf(line, "Total Memory (KB): %lu", total_mem_kb);
     }
@@ -88,79 +93,84 @@ static int load_sysinfo(double *uptime_sec, unsigned long *total_mem_kb) {
     return 0;
 }
 
-/* ── layout helpers ── */
+// layout util
 
-static int calc_name_width(const Row *rows, int count) {
-    int w = 12;  /* minimum so "Name" header has breathing room */
-    for (int i = 0; i < count; i++) {
+int calc_name_width(const Row *rows, int count)
+{
+    int w = 12; /* minimum so "Name" header has breathing room */
+    for (int i = 0; i < count; i++)
+    {
         int len = (int)strlen(rows[i].name);
-        if (len > w) w = len;
+        if (len > w)
+            w = len;
     }
     return w > NAME_CAP ? NAME_CAP : w;
 }
 
-/* Draw a horizontal line using ACS characters.
- * Each col_w[i] = content_width + 2 (for padding).
- * For a single-span line (title/footer) pass n_cols=1 with the full inner width. */
-static void draw_hline(int r, int x,
-                       chtype left, chtype fill, chtype junc, chtype right,
-                       const int *col_w, int n_cols) {
+void draw_hline(int r, int x, chtype left, chtype fill, chtype junc, chtype right, const int *col_w, int n_cols)
+{
     move(r, x);
     addch(left);
-    for (int i = 0; i < n_cols; i++) {
-        for (int j = 0; j < col_w[i]; j++) addch(fill);
-        if (i < n_cols - 1) addch(junc);
+    for (int i = 0; i < n_cols; i++)
+    {
+        for (int j = 0; j < col_w[i]; j++)
+            addch(fill);
+        if (i < n_cols - 1)
+            addch(junc);
     }
     addch(right);
 }
 
-/* Pad the current line with spaces until we reach target_x, then print right border */
-static void pad_to_border(int target_x) {
+void pad_to_border(int target_x)
+{
     int cur = getcurx(stdscr);
-    while (cur < target_x) { addch(' '); cur++; }
+    while (cur < target_x)
+    {
+        addch(' ');
+        cur++;
+    }
     addch(ACS_VLINE);
 }
 
-/* ── main drawing ── */
-
-static void draw_dashboard(const Row *rows, int count,
-                           double uptime_sec, unsigned long total_mem_kb) {
+void draw_dashboard(const Row *rows, int count,
+                    double uptime_sec, unsigned long total_mem_kb)
+{
     erase();
 
     int name_w = calc_name_width(rows, count);
 
-    /* column widths (content + 2 padding) */
     int cw[5] = {
-        COL_PID    + 2,
-        name_w     + 2,
-        COL_CPU    + 2,
-        COL_MEM    + 2,
-        COL_STATUS + 2
-    };
+        COL_PID + 2,
+        name_w + 2,
+        COL_CPU + 2,
+        COL_MEM + 2,
+        COL_STATUS + 2};
     int inner = 0;
-    for (int i = 0; i < 5; i++) inner += cw[i];
-    inner += 4;  /* 4 inner vertical separators */
+    for (int i = 0; i < 5; i++)
+        inner += cw[i];
+    inner += 4;
 
-    int box_w   = inner + 2;  /* + left/right borders */
-    int ox      = (COLS - box_w) / 2;
-    if (ox < 0) ox = 0;
-    int right_x = ox + box_w - 1;  /* column of the right border */
-
+    int box_w = inner + 2;
+    int ox = (COLS - box_w) / 2;
+    if (ox < 0)
+        ox = 0;
+    int right_x = ox + box_w - 1;
     int row = 0;
 
-    /* ── top border ── */
     draw_hline(row, ox, ACS_ULCORNER, ACS_HLINE, ACS_HLINE, ACS_URCORNER, &inner, 1);
     row++;
 
-    /* ── title ── */
+    // ttitle
     {
         const char *title = "-- PULSE : Process Monitor --";
         int tlen = (int)strlen(title);
-        int pad  = inner - tlen;
-        int pl   = pad / 2;
+        int pad = inner - tlen;
+        int pl = pad / 2;
 
-        move(row, ox); addch(ACS_VLINE);
-        for (int i = 0; i < pl; i++) addch(' ');
+        move(row, ox);
+        addch(ACS_VLINE);
+        for (int i = 0; i < pl; i++)
+            addch(' ');
         attron(A_BOLD);
         printw("%s", title);
         attroff(A_BOLD);
@@ -168,24 +178,28 @@ static void draw_dashboard(const Row *rows, int count,
         row++;
     }
 
-    /* ── separator ── */
+    // seperator
     draw_hline(row, ox, ACS_LTEE, ACS_HLINE, ACS_HLINE, ACS_RTEE, &inner, 1);
     row++;
 
-    /* ── CPU & MEM bars ── */
+    // cpu and meemory bar
     {
         double total_cpu = 0, total_mem = 0;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++)
+        {
             total_cpu += rows[i].cpu;
             total_mem += rows[i].mem;
         }
 
         long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-        if (num_cores < 1) num_cores = 1;
+        if (num_cores < 1)
+            num_cores = 1;
         total_cpu /= num_cores;
 
-        if (total_cpu > 100.0) total_cpu = 100.0;
-        if (total_mem > 100.0) total_mem = 100.0;
+        if (total_cpu > 100.0)
+            total_cpu = 100.0;
+        if (total_mem > 100.0)
+            total_mem = 100.0;
 
         int up_h = (int)(uptime_sec / 3600);
         int up_m = (int)((uptime_sec - up_h * 3600) / 60);
@@ -194,15 +208,20 @@ static void draw_dashboard(const Row *rows, int count,
         /* CPU */
         {
             int filled = (int)(total_cpu / 100.0 * BAR_WIDTH);
-            if (filled < 0) filled = 0;
-            if (filled > BAR_WIDTH) filled = BAR_WIDTH;
+            if (filled < 0)
+                filled = 0;
+            if (filled > BAR_WIDTH)
+                filled = BAR_WIDTH;
 
-            move(row, ox); addch(ACS_VLINE);
+            move(row, ox);
+            addch(ACS_VLINE);
             printw("  CPU [");
             attron(COLOR_PAIR(CP_BAR) | A_BOLD);
-            for (int i = 0; i < filled; i++) addch(ACS_CKBOARD);
+            for (int i = 0; i < filled; i++)
+                addch(ACS_CKBOARD);
             attroff(COLOR_PAIR(CP_BAR) | A_BOLD);
-            for (int i = filled; i < BAR_WIDTH; i++) addch('-');
+            for (int i = filled; i < BAR_WIDTH; i++)
+                addch('-');
             printw("] %3d%%   Up: %dh %02dm", (int)total_cpu, up_h, up_m);
             pad_to_border(right_x);
             row++;
@@ -211,36 +230,44 @@ static void draw_dashboard(const Row *rows, int count,
         /* MEM */
         {
             int filled = (int)(total_mem / 100.0 * BAR_WIDTH);
-            if (filled < 0) filled = 0;
-            if (filled > BAR_WIDTH) filled = BAR_WIDTH;
+            if (filled < 0)
+                filled = 0;
+            if (filled > BAR_WIDTH)
+                filled = BAR_WIDTH;
 
-            move(row, ox); addch(ACS_VLINE);
+            move(row, ox);
+            addch(ACS_VLINE);
             printw("  MEM [");
             attron(COLOR_PAIR(CP_BAR) | A_BOLD);
-            for (int i = 0; i < filled; i++) addch(ACS_CKBOARD);
+            for (int i = 0; i < filled; i++)
+                addch(ACS_CKBOARD);
             attroff(COLOR_PAIR(CP_BAR) | A_BOLD);
-            for (int i = filled; i < BAR_WIDTH; i++) addch('-');
+            for (int i = filled; i < BAR_WIDTH; i++)
+                addch('-');
             printw("] %3d%%   %.1f GB", (int)total_mem, mem_gb);
             pad_to_border(right_x);
             row++;
         }
     }
 
-    /* ── table top border (with column junctions) ── */
+    // table top bordr
     draw_hline(row, ox, ACS_LTEE, ACS_HLINE, ACS_TTEE, ACS_RTEE, cw, 5);
     row++;
 
-    /* ── table header ── */
+    // table header
     {
-        const char *hdr[] = { "PID", "Name", "CPU %", "MEM %", "Status" };
-        int cwidth[]       = { COL_PID, name_w, COL_CPU, COL_MEM, COL_STATUS };
+        const char *hdr[] = {"PID", "Name", "CPU %", "MEM %", "Status"};
+        int cwidth[] = {COL_PID, name_w, COL_CPU, COL_MEM, COL_STATUS};
 
-        move(row, ox); addch(ACS_VLINE);
-        for (int i = 0; i < 5; i++) {
+        move(row, ox);
+        addch(ACS_VLINE);
+        for (int i = 0; i < 5; i++)
+        {
             attron(A_BOLD | A_UNDERLINE);
             printw(" %-*s ", cwidth[i], hdr[i]);
             attroff(A_BOLD | A_UNDERLINE);
-            if (i < 4) addch(ACS_VLINE);
+            if (i < 4)
+                addch(ACS_VLINE);
         }
         addch(ACS_VLINE);
         row++;
@@ -252,39 +279,55 @@ static void draw_dashboard(const Row *rows, int count,
 
     /* ── data rows ── */
     int max_rows = LINES - row - 3;
-    if (max_rows < 1) max_rows = 1;
+    if (max_rows < 1)
+        max_rows = 1;
 
-    if (count == 0) {
-        move(row, ox); addch(ACS_VLINE);
+    if (count == 0)
+    {
+        move(row, ox);
+        addch(ACS_VLINE);
         printw("  Waiting for data...");
         pad_to_border(right_x);
         row++;
-    } else {
+    }
+    else
+    {
         int show = count < max_rows ? count : max_rows;
-        for (int i = 0; i < show; i++) {
+        for (int i = 0; i < show; i++)
+        {
             /* truncate long names */
             char dname[NAME_CAP + 1];
-            if ((int)strlen(rows[i].name) > name_w) {
+            if ((int)strlen(rows[i].name) > name_w)
+            {
                 strncpy(dname, rows[i].name, name_w - 2);
                 dname[name_w - 2] = '\0';
                 strcat(dname, "..");
-            } else {
+            }
+            else
+            {
                 strncpy(dname, rows[i].name, sizeof(dname) - 1);
                 dname[sizeof(dname) - 1] = '\0';
             }
 
             /* pick color */
             int cp = CP_LOW;
-            if (strstr(rows[i].label, "HIGH"))        cp = CP_HIGH;
-            else if (strstr(rows[i].label, "MEDIUM"))  cp = CP_MED;
+            if (strstr(rows[i].label, "HIGH"))
+                cp = CP_HIGH;
+            else if (strstr(rows[i].label, "MEDIUM"))
+                cp = CP_MED;
 
             /* strip _IMPACT from label for display */
             char slabel[16];
             strncpy(slabel, rows[i].label, sizeof(slabel) - 1);
             slabel[sizeof(slabel) - 1] = '\0';
-            { char *p = strstr(slabel, "_IMPACT"); if (p) *p = '\0'; }
+            {
+                char *p = strstr(slabel, "_IMPACT");
+                if (p)
+                    *p = '\0';
+            }
 
-            move(row, ox); addch(ACS_VLINE);
+            move(row, ox);
+            addch(ACS_VLINE);
 
             /* PID — plain white */
             printw(" %-*d ", COL_PID, rows[i].pid);
@@ -326,11 +369,13 @@ static void draw_dashboard(const Row *rows, int count,
     {
         const char *keys = "[K]ill  [F]orce  [S]uspend  [R]esume  [P]riority  [Q]uit";
         int klen = (int)strlen(keys);
-        int pad  = inner - klen;
-        int pl   = pad / 2;
+        int pad = inner - klen;
+        int pl = pad / 2;
 
-        move(row, ox); addch(ACS_VLINE);
-        for (int i = 0; i < pl; i++) addch(' ');
+        move(row, ox);
+        addch(ACS_VLINE);
+        for (int i = 0; i < pl; i++)
+            addch(' ');
         printw("%s", keys);
         pad_to_border(right_x);
         row++;
@@ -344,19 +389,22 @@ static void draw_dashboard(const Row *rows, int count,
 
 /* ── input prompts ── */
 
-static int get_pid_input(const char *action) {
+int get_pid_input(const char *action)
+{
     echo();
     curs_set(1);
 
     int pw = 40;
     int px = (COLS - pw) / 2;
-    if (px < 0) px = 0;
+    if (px < 0)
+        px = 0;
     int pr = LINES / 2;
 
     /* top border */
     move(pr - 1, px);
     addch(ACS_ULCORNER);
-    for (int i = 0; i < pw - 2; i++) addch(ACS_HLINE);
+    for (int i = 0; i < pw - 2; i++)
+        addch(ACS_HLINE);
     addch(ACS_URCORNER);
 
     /* prompt line */
@@ -366,14 +414,19 @@ static int get_pid_input(const char *action) {
     {
         int cur = getcurx(stdscr);
         int target = px + pw - 1;
-        while (cur < target) { addch(' '); cur++; }
+        while (cur < target)
+        {
+            addch(' ');
+            cur++;
+        }
         addch(ACS_VLINE);
     }
 
     /* bottom border */
     move(pr + 1, px);
     addch(ACS_LLCORNER);
-    for (int i = 0; i < pw - 2; i++) addch(ACS_HLINE);
+    for (int i = 0; i < pw - 2; i++)
+        addch(ACS_HLINE);
     addch(ACS_LRCORNER);
 
     /* position cursor for input */
@@ -389,47 +442,67 @@ static int get_pid_input(const char *action) {
     return atoi(buf);
 }
 
-static void get_priority_input(void) {
+static void get_priority_input(void)
+{
     echo();
     curs_set(1);
 
     int pw = 44;
     int px = (COLS - pw) / 2;
-    if (px < 0) px = 0;
+    if (px < 0)
+        px = 0;
     int pr = LINES / 2;
 
-    /* top */
+    // top
     move(pr - 1, px);
     addch(ACS_ULCORNER);
-    for (int i = 0; i < pw - 2; i++) addch(ACS_HLINE);
+    for (int i = 0; i < pw - 2; i++)
+        addch(ACS_HLINE);
     addch(ACS_URCORNER);
 
-    /* PID line */
+    // PID
     move(pr, px);
     addch(ACS_VLINE);
     printw(" PRIORITY | Enter PID:       ");
-    { int c = getcurx(stdscr); while (c < px + pw - 1) { addch(' '); c++; } addch(ACS_VLINE); }
+    {
+        int c = getcurx(stdscr);
+        while (c < px + pw - 1)
+        {
+            addch(' ');
+            c++;
+        }
+        addch(ACS_VLINE);
+    }
 
-    /* Nice line */
+    // nice line
     move(pr + 1, px);
     addch(ACS_VLINE);
     printw("           Nice (-20..19):    ");
-    { int c = getcurx(stdscr); while (c < px + pw - 1) { addch(' '); c++; } addch(ACS_VLINE); }
+    {
+        int c = getcurx(stdscr);
+        while (c < px + pw - 1)
+        {
+            addch(' ');
+            c++;
+        }
+        addch(ACS_VLINE);
+    }
 
-    /* bottom */
+    // bottom line
     move(pr + 2, px);
     addch(ACS_LLCORNER);
-    for (int i = 0; i < pw - 2; i++) addch(ACS_HLINE);
+    for (int i = 0; i < pw - 2; i++)
+        addch(ACS_HLINE);
     addch(ACS_LRCORNER);
 
-    /* get PID */
+    // get PID
     move(pr, px + 24);
     refresh();
     char pid_buf[16];
     getstr(pid_buf);
     int pid = atoi(pid_buf);
 
-    /* get nice value */
+    // gtting nice value
     move(pr + 1, px + 30);
     char nice_buf[16];
     getstr(nice_buf);
@@ -438,69 +511,93 @@ static void get_priority_input(void) {
     noecho();
     curs_set(0);
 
-    if (pid > 0) renice_process(pid, nice_val);
+    if (pid > 0)
+        renice_process(pid, nice_val);
 }
 
-/* ── sorting helper ── */
+// sorting helper
 
-static int compare_rows_cpu_desc(const void *a, const void *b) {
+static int compare_rows_cpu_desc(const void *a, const void *b)
+{
     const Row *ra = (const Row *)a;
     const Row *rb = (const Row *)b;
-    if (rb->cpu > ra->cpu) return 1;
-    if (rb->cpu < ra->cpu) return -1;
+    if (rb->cpu > ra->cpu)
+        return 1;
+    if (rb->cpu < ra->cpu)
+        return -1;
     return 0;
 }
 
-/* ── public entry point ── */
+// entry point
 
-void run_interactive_menu(void) {
+void run_interactive_menu(void)
+{
     initscr();
     cbreak();
     noecho();
     curs_set(0);
     timeout(REFRESH_MS);
 
-    if (has_colors()) {
+    if (has_colors())
+    {
         start_color();
         use_default_colors();
-        init_pair(CP_HIGH, COLOR_RED,    -1);
-        init_pair(CP_MED,  COLOR_YELLOW, -1);
-        init_pair(CP_LOW,  COLOR_GREEN,  -1);
-        init_pair(CP_BAR,  COLOR_CYAN,   -1);
+        init_pair(CP_HIGH, COLOR_RED, -1);
+        init_pair(CP_MED, COLOR_YELLOW, -1);
+        init_pair(CP_LOW, COLOR_GREEN, -1);
+        init_pair(CP_BAR, COLOR_CYAN, -1);
     }
 
     Row rows[MAX_ROWS];
 
-    while (1) {
+    while (1)
+    {
         int count = load_rows(rows, MAX_ROWS);
-        if (count > 1) {
+        if (count > 1)
+        {
             qsort(rows, count, sizeof(Row), compare_rows_cpu_desc);
         }
 
-        double uptime; unsigned long memkb;
+        double uptime;
+        unsigned long memkb;
         load_sysinfo(&uptime, &memkb);
 
         draw_dashboard(rows, count, uptime, memkb);
 
         int ch = getch();
-        if (ch == ERR) continue;
+        if (ch == ERR)
+            continue;
         ch = tolower(ch);
 
-        if (ch == 'q') break;
+        if (ch == 'q')
+            break;
 
-        if (ch == 'k') {
+        if (ch == 'k')
+        {
             int pid = get_pid_input("KILL");
-            if (pid > 0) terminate_process(pid);
-        } else if (ch == 'f') {
+            if (pid > 0)
+                terminate_process(pid);
+        }
+        else if (ch == 'f')
+        {
             int pid = get_pid_input("FORCE KILL");
-            if (pid > 0) force_kill(pid);
-        } else if (ch == 's') {
+            if (pid > 0)
+                force_kill(pid);
+        }
+        else if (ch == 's')
+        {
             int pid = get_pid_input("SUSPEND");
-            if (pid > 0) suspend_process(pid);
-        } else if (ch == 'r') {
+            if (pid > 0)
+                suspend_process(pid);
+        }
+        else if (ch == 'r')
+        {
             int pid = get_pid_input("RESUME");
-            if (pid > 0) resume_process(pid);
-        } else if (ch == 'p') {
+            if (pid > 0)
+                resume_process(pid);
+        }
+        else if (ch == 'p')
+        {
             get_priority_input();
         }
     }
@@ -508,6 +605,7 @@ void run_interactive_menu(void) {
     endwin();
 }
 
-void display_main_menu(void) {
+void display_main_menu(void)
+{
     run_interactive_menu();
 }

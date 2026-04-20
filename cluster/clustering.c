@@ -16,18 +16,16 @@ double calculate_distance(AppSummary *a, AppSummary *b) {
 void perform_clustering_and_export(AppSummary *apps, int count) {
     if (count < K_CLUSTERS) return;
 
-    // 1. Initialize Medoids (Pick 3 random points)
+    // 3 random points
     int medoid_indices[K_CLUSTERS] = {0, count / 2, count - 1}; 
     int *assignments = malloc(sizeof(int) * count);
     
-    // 2. K-Medoids Algorithm Loop
-
-
+    // loop for the algo
     //this is another change
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
         int changed = 0;
 
-        // Step A: Assign points to nearest Medoid
+        // assign apps to nearest medoids
         for (int i = 0; i < count; i++) {
             double min_dist = DBL_MAX;
             int best_cluster = 0;
@@ -45,7 +43,7 @@ void perform_clustering_and_export(AppSummary *apps, int count) {
             }
         }
 
-        // Step B: Update Medoids (Find best representative)
+        // update medoids representation
         for (int k = 0; k < K_CLUSTERS; k++) {
             double best_sum_dist = DBL_MAX;
             int new_medoid_idx = medoid_indices[k];
@@ -71,7 +69,7 @@ void perform_clustering_and_export(AppSummary *apps, int count) {
         if (!changed) break; 
     }
 
-    // 3. Determine Cluster Labels based on the Medoids' stats
+    // add labels to apps
     char *labels[K_CLUSTERS];
     for(int k=0; k<K_CLUSTERS; k++) {
         double cpu = apps[medoid_indices[k]].cpu_percentage;
