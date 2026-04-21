@@ -391,8 +391,10 @@ void draw_dashboard(const Row *rows, int count,
 
 int get_pid_input(const char *action)
 {
+      /* block until user types – stop the refresh loop */
     echo();
     curs_set(1);
+    timeout(-1); 
 
     int pw = 40;
     int px = (COLS - pw) / 2;
@@ -437,15 +439,20 @@ int get_pid_input(const char *action)
     char buf[16];
     getstr(buf);
 
+
+    timeout(REFRESH_MS); 
     noecho();
     curs_set(0);
+    /* re-enable auto-refresh */
     return atoi(buf);
 }
 
-static void get_priority_input(void)
+void get_priority_input(void)
 {
+       /* block until user types */
     echo();
     curs_set(1);
+    timeout(-1);
 
     int pw = 44;
     int px = (COLS - pw) / 2;
@@ -508,8 +515,11 @@ static void get_priority_input(void)
     getstr(nice_buf);
     int nice_val = atoi(nice_buf);
 
+    timeout(REFRESH_MS); 
+
     noecho();
     curs_set(0);
+    /* re-enable auto-refresh */
 
     if (pid > 0)
         renice_process(pid, nice_val);
