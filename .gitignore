@@ -7,6 +7,7 @@ _codeql_detected_source_root
 
 # Ignore data files 
 *.csv
+*.py
 *.txt
 .directory
 # Ignore markdown files except README.md

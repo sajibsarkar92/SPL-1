@@ -205,7 +205,7 @@ void draw_dashboard(const Row *rows, int count,
         int up_m = (int)((uptime_sec - up_h * 3600) / 60);
         double mem_gb = (double)total_mem_kb / (1024.0 * 1024.0);
 
-        /* CPU */
+        // cpu
         {
             int filled = (int)(total_cpu / 100.0 * BAR_WIDTH);
             if (filled < 0)
@@ -219,15 +219,18 @@ void draw_dashboard(const Row *rows, int count,
             attron(COLOR_PAIR(CP_BAR) | A_BOLD);
             for (int i = 0; i < filled; i++)
                 addch(ACS_CKBOARD);
+
             attroff(COLOR_PAIR(CP_BAR) | A_BOLD);
+
             for (int i = filled; i < BAR_WIDTH; i++)
                 addch('-');
+
             printw("] %3d%%   Up: %dh %02dm", (int)total_cpu, up_h, up_m);
             pad_to_border(right_x);
             row++;
         }
 
-        /* MEM */
+        // meory
         {
             int filled = (int)(total_mem / 100.0 * BAR_WIDTH);
             if (filled < 0)
@@ -273,11 +276,11 @@ void draw_dashboard(const Row *rows, int count,
         row++;
     }
 
-    /* ── header/data separator ── */
+    // below the header line
     draw_hline(row, ox, ACS_LTEE, ACS_HLINE, ACS_PLUS, ACS_RTEE, cw, 5);
     row++;
 
-    /* ── data rows ── */
+    // data rows
     int max_rows = LINES - row - 3;
     if (max_rows < 1)
         max_rows = 1;
@@ -309,14 +312,14 @@ void draw_dashboard(const Row *rows, int count,
                 dname[sizeof(dname) - 1] = '\0';
             }
 
-            /* pick color */
+            // color by impact
             int cp = CP_LOW;
             if (strstr(rows[i].label, "HIGH"))
                 cp = CP_HIGH;
             else if (strstr(rows[i].label, "MEDIUM"))
                 cp = CP_MED;
 
-            /* strip _IMPACT from label for display */
+            // remove imact from the end
             char slabel[16];
             strncpy(slabel, rows[i].label, sizeof(slabel) - 1);
             slabel[sizeof(slabel) - 1] = '\0';
@@ -329,29 +332,29 @@ void draw_dashboard(const Row *rows, int count,
             move(row, ox);
             addch(ACS_VLINE);
 
-            /* PID — plain white */
+           //PID
             printw(" %-*d ", COL_PID, rows[i].pid);
             addch(ACS_VLINE);
 
-            /* Name */
+            //name
             attron(COLOR_PAIR(cp));
             printw(" %-*s ", name_w, dname);
             attroff(COLOR_PAIR(cp));
             addch(ACS_VLINE);
 
-            /* CPU % */
+            //cpu
             attron(COLOR_PAIR(cp));
             printw(" %*.2f ", COL_CPU - 1, rows[i].cpu);
             attroff(COLOR_PAIR(cp));
             addch(ACS_VLINE);
 
-            /* MEM % */
+            //mem
             attron(COLOR_PAIR(cp));
             printw(" %*.2f ", COL_MEM - 1, rows[i].mem);
             attroff(COLOR_PAIR(cp));
             addch(ACS_VLINE);
 
-            /* Status */
+            //status
             attron(COLOR_PAIR(cp) | A_BOLD);
             printw(" %-*s ", COL_STATUS, slabel);
             attroff(COLOR_PAIR(cp) | A_BOLD);
@@ -361,11 +364,11 @@ void draw_dashboard(const Row *rows, int count,
         }
     }
 
-    /* ── table bottom border ── */
+    // table bottom border
     draw_hline(row, ox, ACS_LTEE, ACS_HLINE, ACS_BTEE, ACS_RTEE, cw, 5);
     row++;
 
-    /* ── shortcuts bar ── */
+    // action bar
     {
         const char *keys = "[K]ill  [F]orce  [S]uspend  [R]esume  [P]riority  [Q]uit";
         int klen = (int)strlen(keys);
@@ -381,20 +384,20 @@ void draw_dashboard(const Row *rows, int count,
         row++;
     }
 
-    /* ── bottom border ── */
+    // last border
     draw_hline(row, ox, ACS_LLCORNER, ACS_HLINE, ACS_HLINE, ACS_LRCORNER, &inner, 1);
 
     refresh();
 }
 
-/* ── input prompts ── */
+// getting inputs
 
-int get_pid_input(const char *action)
+int get_pid_input(char *action)
 {
-      /* block until user types – stop the refresh loop */
+    // block refresh when typing
     echo();
     curs_set(1);
-    timeout(-1); 
+    timeout(-1);
 
     int pw = 40;
     int px = (COLS - pw) / 2;
@@ -439,8 +442,7 @@ int get_pid_input(const char *action)
     char buf[16];
     getstr(buf);
 
-
-    timeout(REFRESH_MS); 
+    timeout(REFRESH_MS);
     noecho();
     curs_set(0);
     /* re-enable auto-refresh */
@@ -449,7 +451,7 @@ int get_pid_input(const char *action)
 
 void get_priority_input(void)
 {
-       /* block until user types */
+    /* block until user types */
     echo();
     curs_set(1);
     timeout(-1);
@@ -515,7 +517,7 @@ void get_priority_input(void)
     getstr(nice_buf);
     int nice_val = atoi(nice_buf);
 
-    timeout(REFRESH_MS); 
+    timeout(REFRESH_MS);
 
     noecho();
     curs_set(0);
@@ -610,6 +612,7 @@ void run_interactive_menu(void)
         {
             get_priority_input();
         }
+       
     }
 
     endwin();

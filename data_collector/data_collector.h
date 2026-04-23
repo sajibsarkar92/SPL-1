@@ -20,10 +20,6 @@ typedef struct {
 } ProcessInfo;
 
 typedef struct {
-    // unsigned long user;
-    // unsigned long nice;
-    // unsigned long system;
-    // unsigned long idle;
     unsigned long total_mem_kb;
     long double uptime;
 } SystemCpuInfo;
@@ -44,20 +40,6 @@ typedef struct {
     long double uptime;
     long snapshot_wall_time; // Needed for Delta E
 } SystemSnap;
-
-
-// typedef struct {
-//     int pid;
-//     int ppid;
-//     int sid;
-//     int uid;
-//     char name[128];
-//     unsigned long jiffies_total;
-//     unsigned long starttime;
-//     unsigned long pss_kb;
-//     unsigned long calculated_delta_p;
-
-// }ProcessRaw;
 
 typedef struct {
     int pid;

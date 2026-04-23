@@ -68,13 +68,20 @@ int is_shell(const char *name) {
     char clean_name[256];
     extract_basename(name, clean_name, sizeof(clean_name));
     
-    if (strcmp(clean_name, "bash") == 0) return 1;
-    if (strcmp(clean_name, "sh") == 0) return 1;
-    if (strcmp(clean_name, "zsh") == 0) return 1;
-    if (strcmp(clean_name, "fish") == 0) return 1;
-    if (strcmp(clean_name, "gnome-shell") == 0) return 1;
-    if (strcmp(clean_name, "systemd") == 0) return 1;
-    if (strcmp(clean_name, "(systemd)") == 0) return 1;
+    if (strcmp(clean_name, "bash") == 0)
+        return 1;
+    if (strcmp(clean_name, "sh") == 0)
+        return 1;
+    if (strcmp(clean_name, "zsh") == 0)
+        return 1;
+    if (strcmp(clean_name, "fish") == 0)
+        return 1;
+    if (strcmp(clean_name, "gnome-shell") == 0)
+        return 1;
+    if (strcmp(clean_name, "systemd") == 0)
+        return 1;
+    if (strcmp(clean_name, "(systemd)") == 0)
+        return 1;
 
     return 0;
 }
